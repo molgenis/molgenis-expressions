@@ -6,29 +6,32 @@ case object Empty extends UnaryOperator
 case object Negate extends UnaryOperator
 
 sealed trait BinaryOperator
-// binary functions
-sealed trait BinaryFunction extends BinaryOperator
-case object Contains extends BinaryOperator
-case object NotContains extends BinaryOperator
-case object AnyOf extends BinaryOperator
-case object AllOf extends BinaryOperator
-// arithmetic operations
-case object Power extends BinaryOperator
-case object Multiply extends BinaryOperator
-case object Divide extends BinaryOperator
-case object Modulo extends BinaryOperator
-case object Add extends BinaryOperator
-case object Subtract extends BinaryOperator
-// comparison
-case object LessOrEqual extends BinaryOperator
-case object GreaterOrEqual extends BinaryOperator
-case object Less extends BinaryOperator
-case object Greater extends BinaryOperator
-case object Equal extends BinaryOperator
-case object NotEqual extends BinaryOperator
-// boolean logic
-case object And extends BinaryOperator
-case object Or extends BinaryOperator
+
+sealed trait ArrayOperator extends BinaryOperator
+case object Contains extends ArrayOperator
+case object NotContains extends ArrayOperator
+case object AnyOf extends ArrayOperator
+case object AllOf extends ArrayOperator
+
+sealed trait ArithmeticOperator extends BinaryOperator
+case object Power extends ArithmeticOperator
+case object Multiply extends ArithmeticOperator
+case object Divide extends ArithmeticOperator
+case object Modulo extends ArithmeticOperator
+case object Add extends ArithmeticOperator
+case object Subtract extends ArithmeticOperator
+
+sealed trait ComparisonOperator extends BinaryOperator
+case object LessOrEqual extends ComparisonOperator
+case object GreaterOrEqual extends ComparisonOperator
+case object Less extends ComparisonOperator
+case object Greater extends ComparisonOperator
+case object Equal extends ComparisonOperator
+case object NotEqual extends ComparisonOperator
+
+sealed trait BooleanOperator extends BinaryOperator
+case object And extends BooleanOperator
+case object Or extends BooleanOperator
 
 sealed trait Expression
 

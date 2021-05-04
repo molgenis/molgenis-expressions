@@ -2,21 +2,17 @@ package org.molgenis.expression
 
 import scala.util.parsing.combinator._
 
-object ExpressionParser extends JavaTokenParsers {
-
-  private def empty = """(?i)empty""".r ^^ (_ => Empty)
-
-  private def notEmpty = """(?i)notempty""".r ^^ (_ => NotEmpty)
-
-  private def negate = """!|(?i)negate""".r ^^ (_ => Negate)
-
-  private def unFunction: Parser[UnaryOperator] = empty | notEmpty
+object Parser extends JavaTokenParsers {
 
   def nullValue: Parser[Null.type] = ("null" | "undefined") ^^ (_ => Null)
 
-  def arithmeticValue: Parser[Double] = (decimalNumber ^^ (s => s.toDouble)) | (wholeNumber ^^ (s => s.toInt))
+  def arithmeticValue: Parser[Double] =
+    (decimalNumber ^^ (s => s.toDouble)) |
+      (wholeNumber ^^ (s => s.toLong))
 
-  def logicValue: Parser[Boolean] = """(?i)true""".r ^^ (_ => true) | """(?i)false""".r ^^ (_ => false)
+  def logicValue: Parser[Boolean] =
+    """(?i)true""".r ^^ (_ => true) |
+      """(?i)false""".r ^^ (_ => false)
 
   def singleQuoteStringLiteral: Parser[String] = ("'" + """([^"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "'").r
 
@@ -28,8 +24,11 @@ object ExpressionParser extends JavaTokenParsers {
 
   def atom: Parser[Expression] = nullValue | variable | constValue
 
+  private def unFunction: Parser[UnaryOperator] =
+    """(?i)empty""".r ^^ (_ => Empty) |
+      """(?i)notempty""".r ^^ (_ => NotEmpty)
   def unaryOperation: Parser[UnaryOperation] =
-    negate ~> expression ^^ (expr => UnaryOperation(Negate, expr)) |
+    ("""!|(?i)negate""".r ^^ (_ => Negate)) ~> expression ^^ (expr => UnaryOperation(Negate, expr)) |
       atom ~ unFunction ^^ { case operand ~ op => UnaryOperation(op, operand) }
 
   def functionOperation: Parser[FunctionEvaluation] =
