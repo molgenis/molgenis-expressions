@@ -1,5 +1,7 @@
 package org.molgenis.expression
 
+import java.text.ParseException
+import scala.util.Try
 import scala.util.parsing.combinator._
 
 object Parser extends JavaTokenParsers {
@@ -85,5 +87,8 @@ object Parser extends JavaTokenParsers {
     case a ~ b => buildTreeLeftAssociative(a, b)
   }
 
-  def parseAll(in: CharSequence): ParseResult[Expression] = parseAll(expression, in)
+  def parseAll(in: CharSequence): Try[Expression] = parseAll(expression, in) match {
+    case Success(expression, _) => scala.util.Success(expression)
+    case Failure(msg, input) => scala.util.Failure(new ParseException(msg, input.offset))
+  }
 }

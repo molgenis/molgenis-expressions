@@ -1,7 +1,7 @@
 package org.molgenis.expression
 
 import scala.util.{Failure, Success, Try}
-import Numeric.Implicits._
+import scala.language.implicitConversions
 
 object Evaluator {
 
@@ -30,7 +30,20 @@ object Evaluator {
     }
   }
 
-  class Evaluator(context: Map[String, Any]) {
+  def getVariables(expression: Expression): Set[String] = {
+    implicit def listToSet(list: List[String]): Set[String] = list.toSet
+    expression match {
+      case UnaryOperation(_, operand) => getVariables(operand)
+      case BinaryOperation(_, left, right) => getVariables(left) ++ getVariables(right)
+      case FunctionEvaluation(_, arguments) => arguments flatMap getVariables
+      case Constant(_) => Set()
+      case Null => Set()
+      case Variable(name) => Set(name)
+      case Array(items) => items flatMap getVariables
+    }
+  }
+
+  class Evaluator(context: scala.collection.Map[String, Any]) {
     def evaluate(expression: Expression): Try[Any] = expression match {
       case Constant(x) => Success(x)
       case Variable(name) => Try(context(name))
@@ -77,5 +90,4 @@ object Evaluator {
       case _ => Failure(new NotImplementedError())
     }
   }
-
 }

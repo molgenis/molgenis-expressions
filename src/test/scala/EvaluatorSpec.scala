@@ -75,4 +75,17 @@ class EvaluatorSpec extends AnyFlatSpec {
         Variable("bar"),
         Constant(4)))) == Success(true))
   }
+
+  "get variables" should "return a set of variable names used" in {
+    assert(Evaluator.getVariables(BinaryOperation(
+      And,
+      BinaryOperation(
+        Less,
+        Variable("bar"),
+        Variable("ten")),
+      BinaryOperation(
+        Greater,
+        Variable("bar"),
+        Constant(4)))) == Set("bar", "ten"))
+  }
 }

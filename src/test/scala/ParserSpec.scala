@@ -4,6 +4,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.{forAll, whenever}
 import org.scalatest.prop.{TableFor3, Tables}
 
+import java.text.ParseException
+import scala.util.Failure
+
 class ParserSpec extends AnyFlatSpec with Tables {
   "Value parser" should "parse integers" in {
     assert(Parser.parseAll(Parser.arithmeticValue, "3").get == 3)
@@ -168,5 +171,11 @@ class ParserSpec extends AnyFlatSpec with Tables {
             BinaryOperation(operator, Variable("foo"), Array(List(Constant(1), Constant(2))))
         )
       })
+  }
+
+  "Parse failures" should "be reported as failures containing a java.text.ParseException" in {
+    val exception = Parser.parseAll("{foo").failed.get
+    assert(exception.getMessage == "'}' expected but end of source found")
+    assert(exception.asInstanceOf[ParseException].getErrorOffset == 4)
   }
 }
