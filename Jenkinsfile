@@ -7,7 +7,7 @@ pipeline {
     environment {
         LOCAL_REPOSITORY = "${LOCAL_REGISTRY}/molgenis/molgenis-expressions_2.13"
         TIMESTAMP = sh(returnStdout: true, script: "date -u +'%F_%H-%M-%S'").trim()
-//         https://stackoverflow.com/a/47684072/1973271
+        // https://stackoverflow.com/a/47684072/1973271
         SBT_OPTS = "-Duser.home=${JENKINS_AGENT_WORKDIR}"
     }
     stages {
@@ -25,9 +25,10 @@ pipeline {
                     }
                 }
                 container('maven') {
-                    sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
-                    sh "git config branch.master.remote origin"
-                    sh "git config branch.master.merge refs/heads/master"
+                    sh "git remote set-url origin https://$GITHUB_TOKEN@github.com/molgenis/molgenis-expressions.git"
+//                     sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
+//                     sh "git config branch.master.remote origin"
+//                     sh "git config branch.master.merge refs/heads/master"
                 }
             }
         }
