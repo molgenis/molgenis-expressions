@@ -1,1 +1,5 @@
 addSbtPlugin("org.jetbrains" % "sbt-ide-settings" % "1.1.0")
+addSbtPlugin("com.github.mwz" % "sbt-sonar" % "2.2.0")
+addSbtPlugin("com.github.sbt" % "sbt-release" % "1.0.15")
+addSbtPlugin("me.pdalpra" % "sbt-autoversion" % "2.0.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.0")
