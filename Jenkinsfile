@@ -9,7 +9,7 @@ pipeline {
         TIMESTAMP = sh(returnStdout: true, script: "date -u +'%F_%H-%M-%S'").trim()
     }
     stages {
-        stage('Retrieve build secrets') {
+        stage('Prepare') {
             steps {
                 container('vault') {
                     script {
@@ -21,6 +21,11 @@ pipeline {
                         env.GITHUB_TOKEN = sh(script: 'vault read -field=value secret/ops/token/github', returnStdout: true)
                         env.GITHUB_USER = sh(script: 'vault read -field=username secret/ops/token/github', returnStdout: true)
                     }
+                }
+                container('maven') {
+                    sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
+                    sh "git config branch.master.remote origin"
+                    sh "git config branch.master.merge refs/heads/master"
                 }
             }
         }
@@ -52,8 +57,6 @@ pipeline {
                     steps {
                         container('maven') {
                             sh "./sbtx test sonarScan"
-//                             sh "git fetch --no-tags origin master:refs/remotes/origin/master"
-//                             sh "git push --set-upstream origin ${CHANGE_TARGET}"
                             sh "./sbtx release with-defaults"
                         }
                     }
