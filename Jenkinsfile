@@ -26,9 +26,9 @@ pipeline {
                 }
                 container('maven') {
                     sh "git remote set-url origin https://$GITHUB_TOKEN@github.com/molgenis/molgenis-expressions.git"
-//                     sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
-//                     sh "git config branch.master.remote origin"
-//                     sh "git config branch.master.merge refs/heads/master"
+                    sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
+                    sh "git config branch.master.remote origin"
+                    sh "git config branch.master.merge refs/heads/master"
                 }
             }
         }
@@ -59,7 +59,7 @@ pipeline {
                 stage('Build, Test, Push to Registries [ master ]') {
                     steps {
                         container('maven') {
-                            sh "./sbtx test sonarScan"
+//                             sh "./sbtx test sonarScan"
                             sh "./sbtx \"release with-defaults\""
                         }
                     }
