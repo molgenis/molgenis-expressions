@@ -57,7 +57,7 @@ pipeline {
                     steps {
                         container('maven') {
                             sh "./sbtx test sonarScan"
-                            sh "./sbtx release with-defaults"
+                            sh "./sbtx \"release with-defaults\""
                         }
                     }
                     post {
