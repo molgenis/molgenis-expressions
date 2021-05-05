@@ -7,6 +7,8 @@ pipeline {
     environment {
         LOCAL_REPOSITORY = "${LOCAL_REGISTRY}/molgenis/molgenis-expressions_2.13"
         TIMESTAMP = sh(returnStdout: true, script: "date -u +'%F_%H-%M-%S'").trim()
+//         https://stackoverflow.com/a/47684072/1973271
+        SBT_OPTS = "-Duser.home=${JENKINS_AGENT_WORKDIR}"
     }
     stages {
         stage('Prepare') {
