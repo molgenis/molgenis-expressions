@@ -53,13 +53,18 @@ pipeline {
         }
         stage('Steps [ master ]') {
             when {
-                branch 'master'
+                allOf {
+                    branch 'master'
+                    not {
+                        changelog '^Setting version to'
+                    }
+                }
             }
             stages {
                 stage('Build, Test, Push to Registries [ master ]') {
                     steps {
                         container('maven') {
-//                             sh "./sbtx test sonarScan"
+                            sh "./sbtx test sonarScan"
                             sh "./sbtx \"release with-defaults\""
                         }
                     }
