@@ -3,7 +3,6 @@ import sbtsonar.SonarPlugin.autoImport.sonarProperties
 organization := "org.molgenis"
 name := "molgenis-expressions"
 
-version := "0.1-SNAPSHOT"
 isSnapshot := true
 
 scalaVersion := "2.13.5"
