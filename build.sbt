@@ -23,7 +23,7 @@ publishMavenStyle := true
 publishM2Configuration := publishM2Configuration.value.withOverwrite(true)
 defaultBump := None
 
-libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
+libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.2.2"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.7" % "test"
 
 
