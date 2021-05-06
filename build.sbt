@@ -7,6 +7,7 @@ name := "molgenis-expressions"
 scalaVersion := "2.13.5"
 
 idePackagePrefix := Some("org.molgenis.expression")
+Global / excludeLintKeys ++= Set(idePackagePrefix)
 
 // publish to registry.molgenis.org
 credentials += Credentials(Path.userHome / ".sbt" / ".credentials")
