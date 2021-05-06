@@ -53,7 +53,7 @@ object Evaluator {
         (left, right) match {
           case (f: Failure[_], _) => f
           case (_, f: Failure[_]) => f
-          case _ => {
+          case _ =>
             val leftValue = left.get
             val rightValue = right.get
             binaryOp match {
@@ -84,7 +84,6 @@ object Evaluator {
                 case _ => Failure(new IllegalArgumentException(s"Bad operand types for operator ${operator}: ${leftValue.getClass}, ${rightValue.getClass}"))
               }
             }
-          }
 
         }
       case _ => Failure(new NotImplementedError())
