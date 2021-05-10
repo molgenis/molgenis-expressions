@@ -7,6 +7,24 @@ import fastparse._
 import scala.util.Try
 
 object Parser {
+  private def precedence(op: BinaryOperator):Int = op match {
+    case _: SetOperator => 7
+    case Power => 6
+    case Multiply | Divide | Modulo => 5
+    case Add | Subtract => 4
+    case _: ComparisonOperator => 3
+    case And => 2
+    case Or => 1
+  }
+
+  private sealed trait Associativity
+  private case object LeftAssociative extends Associativity
+  private case object RightAssociative extends Associativity
+  private def associativity(op: BinaryOperator): Associativity = op match {
+    case Power => RightAssociative
+    case _ => LeftAssociative
+  }
+
   def nullValue[_: P]: P[Null.type] = P(StringIn("null", "undefined").map(_ => Null))
 
   def digit[_: P]: P[String] = P(CharIn("0-9").!)
@@ -59,7 +77,7 @@ object Parser {
 
   def variable[_: P]: P[Variable] = P("{" ~/ identifier.! ~ "}") map Variable
 
-  def atom[_: P]: P[Expression] = P(nullValue | variable | constValue)
+  def atom[_: P]: P[Expression] = P(nullValue | variable | constValue | array)
 
   private def unFunction[_: P]: P[UnaryOperator] = P(
     IgnoreCase("empty").map(_ => Empty) |
@@ -75,67 +93,59 @@ object Parser {
     P((identifier ~ "(" ~/ expression.rep(sep=",") ~ ")")
       .map { case(name, args) => FunctionEvaluation(name, args.toList)})
   def array[_:P]: P[Array] = P(("[" ~/ expression.rep(sep=",") ~ "]").map( items => Array(items.toList)))
-  def factor[_:P]: P[Expression] = P("(" ~/ expression ~ ")" | functionOperation | unaryOperation | array )
+  def factor[_:P]: P[Expression] = P("(" ~/ expression ~ ")" | functionOperation | unaryOperation )
 
   def binFunctions[_:P]: P[BinaryOperator] = P(
     ("*=" | IgnoreCase("contains")).map(_ => Contains) |
       IgnoreCase("notcontains").map(_ => NotContains) |
       IgnoreCase("anyof").map(_ => AnyOf) |
-      IgnoreCase("allof").map(_ => AllOf)
-  )
-  def binaryFuncOp[_:P] : P[Expression] = (factor ~ (binFunctions ~/ factor).?).map {
-    case (left, None) => left
-    case (left, Some((op, right))) => BinaryOperation(op, left, right)
-  }
-  // a - b + c => (a-b) + c
-  def buildTreeLeftAssociative[T <: BinaryOperator] (head: Expression, tail: Seq[(T, Expression)]): Expression =
-    tail.foldLeft(head){ case (a, (op, b)) => BinaryOperation(op, a, b) }
-
-  // This hierarchy enforces the operator precedence ^ > */% > +- > comparisons
-  def powerSigns[_:P]: P[Unit] = P(IgnoreCase("power") | "^")
-  def mulDivOps[_:P]: P[Expression] = P((binaryFuncOp ~ (powerSigns ~/ binaryFuncOp).?).map {
-    case(left, None) => left
-    case (left, Some(right)) => BinaryOperation(Power, left, right)
-  })
-
-  def mulDivSigns[_:P]: P[BinaryOperator] = P(
-    P("*").map(_ => Multiply) |
-    P("/").map(_ => Divide) |
-    P("%").map(_ => Modulo))
-  def plusMinusOps[_:P]: P[Expression] = P(mulDivOps ~ (mulDivSigns ~/ mulDivOps).rep() map {
-    case (a, b) => buildTreeLeftAssociative(a, b)
-  })
-
-  def plusMinusSigns[_:P]: P[BinaryOperator] = P(P("+").map(_ => Add) | P("-").map(_ => Subtract))
-  def compOps[_:P]: P[Expression] = P(plusMinusOps ~ (plusMinusSigns ~/ plusMinusOps).rep() map {
-    case (a, b) => buildTreeLeftAssociative(a, b)
-  })
-
-  def comparisonOperator[_:P]: P[BinaryOperator] = P(
-    ("<=" | IgnoreCase("lessorequal")).map(_ => LessOrEqual) |
+      IgnoreCase("allof").map(_ => AllOf) |
+      ("^" | IgnoreCase("power")).map(_ => Power) |
+      P("*").map(_ => Multiply) |
+      P("/").map(_ => Divide) |
+      P("%").map(_ => Modulo) |
+      P("+").map(_ => Add) |
+      P("-").map(_ => Subtract) |
+      ("<=" | IgnoreCase("lessorequal")).map(_ => LessOrEqual) |
       (">=" | IgnoreCase("greaterorequal")).map(_ => GreaterOrEqual) |
       ("<" | IgnoreCase("less")).map(_ => Less) |
       (">" | IgnoreCase("greater")).map(_ => Greater) |
       ("=" | IgnoreCase("equal")).map(_ => Equal) |
-      ("!=" | IgnoreCase("notequal")).map(_ => NotEqual)
+      ("!=" | IgnoreCase("notequal")).map(_ => NotEqual) |
+      ("&&" | IgnoreCase("and")).map(_ => And) |
+      ("||" | IgnoreCase("or")).map(_ => Or)
   )
-  def logicAnd[_:P]: P[Expression] = P(compOps ~ (comparisonOperator ~/ compOps).rep() map {
-    case (a, b) => buildTreeLeftAssociative(a, b)
-  })
-  private def andSign[_:P]: P[BinaryOperator] = P((IgnoreCase("and") | "&&").map(_ => And))
-  def logicOr[_:P]: P[Expression] = P(logicAnd ~ (andSign ~/ logicAnd).rep() map {
-    case (a, b) => buildTreeLeftAssociative(a, b)
-  })
-  private def orSign[_:P]: P[BinaryOperator] = P((IgnoreCase("or") | "||").map(_ => Or))
-  def expression[_:P]: P[Expression] = P(logicOr ~ (orSign ~/ logicOr).rep() map {
-    case (a, b) => buildTreeLeftAssociative(a, b)
+  def expression[_:P] : P[Expression] = (factor ~ (binFunctions ~/ factor).rep()).map({
+    case (pre, fs) =>
+      // Use precedence climbing algorithm to shape the operator tree
+      var remaining = fs
+      def climb(minPrec: Int, current: Expression): Expression = {
+        var result = current
+        while (remaining.headOption match {
+          case None => false
+          case Some((op, next)) =>
+            val prec: Int = precedence(op)
+            if (prec < minPrec) false
+            else {
+              remaining = remaining.tail
+              val nextPrecedence = if (associativity(op) == LeftAssociative) prec + 1 else prec
+              val rhs = climb(nextPrecedence, next)
+              result = BinaryOperation(op, result, rhs)
+              true
+            }
+        }) ()
+        result
+      }
+      climb(0, pre)
   })
 
-  case class ParseError(msg: String, index: Int) extends Throwable
+  def expressionEnd[_:P]: P[Expression] = P(expression ~ End)
 
-  def parseAll(in: String): Try[Expression] = parse(in, expression(_)) match {
+  case class ParseError(msg: String, index: Int) extends Exception(msg)
+
+  def parseAll(in: String): Try[Expression] = parse(in, expressionEnd(_)) match {
     case Parsed.Success(expression, _) => scala.util.Success(expression)
     case f: Parsed.Failure =>
-      scala.util.Failure(new ParseError(f.trace().msg, f.index))
+      scala.util.Failure(ParseError(f.trace().msg, f.index))
   }
 }
