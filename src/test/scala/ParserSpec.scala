@@ -1,13 +1,11 @@
 package org.molgenis.expression
 
 import fastparse._
-import org.molgenis.expression.Parser.ParseError
+import Parser.ParseError
 import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.{forAll, whenever}
 import org.scalatest.prop.{TableFor2, TableFor3, Tables}
-
-import java.text.ParseException
 
 class ParserSpec extends AnyFlatSpec with Tables {
   val numbers: TableFor2[String, Number] = Table(
@@ -123,6 +121,11 @@ class ParserSpec extends AnyFlatSpec with Tables {
   "Power" should "parse" in {
     assert(Parser.parseAll("3 power 2").success.value == BinaryOperation(Power, Constant(3), Constant(2)))
     assert(Parser.parseAll("3 ^ 2").success.value == BinaryOperation(Power, Constant(3), Constant(2)))
+  }
+
+  it should "be right-associative" in {
+    assert(Parser.parseAll("3^4^5").success.value ==
+      BinaryOperation(Power, Constant(3), BinaryOperation(Power, Constant(4), Constant(5))))
   }
 
   "Multiplication and Division" should "parse" in {
@@ -246,7 +249,7 @@ class ParserSpec extends AnyFlatSpec with Tables {
       })
   }
 
-  "Parse failures" should "be reported as failures containing a java.text.ParseException" in {
+  "Parse failures" should "be reported as failures containing a ParseError" in {
     val exception = Parser.parseAll("{foo").failure.exception
     assert(exception.getMessage == "Expected \"}\":1:5, found \"\"")
     assert(exception.asInstanceOf[ParseError].index == 4)

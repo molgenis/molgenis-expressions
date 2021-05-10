@@ -49,7 +49,8 @@ object Evaluator {
     case Contains | AllOf => left.intersect(right) == right
   }
 
-  class Evaluator(context: scala.collection.Map[String, Any]) {
+  class Evaluator(context: scala.collection.Map[String, Any],
+                  functions: scala.collection.Map[String, List[Any] => Any]) {
     def evaluate(expression: Expression): Try[Any] = expression match {
       case Constant(x) => Success(x)
       case Array(x: List[Expression]) => Try(x.map(evaluate).map(_.get))
@@ -114,7 +115,8 @@ object Evaluator {
           case _ => Failure(new IllegalArgumentException(s"Cannot ${op} ${value.getClass.getSimpleName}"))
         }
       }
-      case _ => Failure(new NotImplementedError())
+      case FunctionEvaluation(name, args) =>
+          Try(functions(name).apply(args.map(evaluate).map(_.get)))
     }
   }
 }
