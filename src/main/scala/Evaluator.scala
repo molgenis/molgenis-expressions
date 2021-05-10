@@ -44,10 +44,9 @@ object Evaluator {
   }
 
   def evaluateSetOp(left: Set[Any], right: Set[Any], op: SetOperator): Boolean = op match {
-    case Contains => left.intersect(right).nonEmpty
-    case NotContains => left.intersect(right).isEmpty
+    case NotContains => left.intersect(right) != right
     case AnyOf => left.intersect(right).nonEmpty
-    case AllOf => left.intersect(right) == right
+    case Contains | AllOf => left.intersect(right) == right
   }
 
   class Evaluator(context: scala.collection.Map[String, Any]) {
@@ -85,7 +84,7 @@ object Evaluator {
                 case (l: Long, r: Number) => integerArithmetic(operator, l, r.longValue())
                 case (l: Number, r: Long) => integerArithmetic(operator, l.longValue(), r)
                 case (l: Int, r: Int) => integerArithmetic(operator, l, r)
-                case _ => Failure(new IllegalArgumentException(s"Bad operand types for operator ${operator}: ${leftValue.getClass}, ${rightValue.getClass}"))
+                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue.getClass.getSimpleName} and ${rightValue.getClass.getSimpleName}"))
               }
               case operator: ComparisonOperator => (leftValue, rightValue, operator) match {
                 case (l: Number, r: Number, Less) => Success(l.doubleValue() < r.doubleValue())
@@ -94,15 +93,27 @@ object Evaluator {
                 case (l: Any, r: Any, NotEqual) => Success(l != r)
                 case (l: Number, r: Number, GreaterOrEqual) => Success(l.doubleValue() >= r.doubleValue())
                 case (l: Number, r: Number, Greater) => Success(l.doubleValue() > r.doubleValue())
+                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue.getClass.getSimpleName} and ${rightValue.getClass.getSimpleName}"))
               }
               case operator: BooleanOperator => (leftValue, rightValue, operator) match {
                 case (b1: Boolean, b2: Boolean, And) => Success(b1 && b2)
                 case (b1: Boolean, b2: Boolean, Or) => Success(b1 || b2)
-                case _ => Failure(new IllegalArgumentException(s"Bad operand types for operator ${operator}: ${leftValue.getClass}, ${rightValue.getClass}"))
+                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue.getClass.getSimpleName} and ${rightValue.getClass.getSimpleName}"))
               }
             }
 
         }
+      case UnaryOperation(op, operand) => evaluate(operand) match {
+        case Failure(f) => Failure(f)
+        case Success(value) => (op, value) match {
+          case (Negate, b: Boolean) => Success(!b)
+          case (Empty, c: Iterable[Any]) => Success(c.isEmpty)
+          case (Empty, s: String) => Success(s.isEmpty)
+          case (NotEmpty, c: Iterable[Any]) => Success(c.nonEmpty)
+          case (NotEmpty, s: String) => Success(s.nonEmpty)
+          case _ => Failure(new IllegalArgumentException(s"Cannot ${op} ${value.getClass.getSimpleName}"))
+        }
+      }
       case _ => Failure(new NotImplementedError())
     }
   }
