@@ -1,5 +1,6 @@
 import sbtsonar.SonarPlugin.autoImport.sonarProperties
-import autoversion.AutoVersionPlugin
+
+enablePlugins(ScalaJSPlugin)
 
 organization := "org.molgenis"
 name := "molgenis-expressions"
@@ -23,9 +24,8 @@ publishMavenStyle := true
 publishM2Configuration := publishM2Configuration.value.withOverwrite(true)
 defaultBump := None
 
-libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.2.2"
+libraryDependencies += "com.lihaoyi" %%% "fastparse" % "2.3.2"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.7" % "test"
-
 
 sonarProperties ++= Map(
   "sonar.host.url" -> "https://sonarcloud.io",

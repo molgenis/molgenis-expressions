@@ -4,7 +4,6 @@ import fastparse.CharPredicates.isPrintableChar
 import fastparse.SingleLineWhitespace._
 import fastparse._
 
-import java.text.ParseException
 import scala.util.Try
 
 object Parser {
@@ -132,9 +131,11 @@ object Parser {
     case (a, b) => buildTreeLeftAssociative(a, b)
   })
 
+  case class ParseError(msg: String, index: Int) extends Throwable
+
   def parseAll(in: String): Try[Expression] = parse(in, expression(_)) match {
     case Parsed.Success(expression, _) => scala.util.Success(expression)
     case f: Parsed.Failure =>
-      scala.util.Failure(new ParseException(f.trace().msg, f.index))
+      scala.util.Failure(new ParseError(f.trace().msg, f.index))
   }
 }
