@@ -1,10 +1,13 @@
 package org.molgenis.expression
 
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import org.scalatest.prop.Tables
+import org.scalatest.TryValues._
 
 import scala.util.Success
 
-class EvaluatorSpec extends AnyFlatSpec {
+class EvaluatorSpec extends AnyFlatSpec with Tables {
 
   val context: Map[String, Any] = Map("foo" -> "foo", "bar" -> 4.5, "ten" -> 10)
   val evaluator = new Evaluator.Evaluator(context)
@@ -87,5 +90,27 @@ class EvaluatorSpec extends AnyFlatSpec {
         Greater,
         Variable("bar"),
         Constant(4)))) == Set("bar", "ten"))
+  }
+
+  val arrayExpressions = Table(
+    ("expression", "value"),
+    ("['a', 'c'] anyof ['a', 'b']", true),
+    ("['a', 'c'] allof ['a', 'b']", false),
+    ("['a', 'c', 'd'] allof ['a', 'c']", true),
+    ("['a', 'c'] contains 'a'", true),
+    ("['a', 'c'] contains 'b'", false),
+    ("['a', 'c'] contains ['a']", true),
+    ("['a'] contains ['a', 'c']", true),
+    ("['1'] contains '1'", true),
+    ("['2'] contains '1'", false)
+  )
+
+  "array expressions" should "be parsed and evaluated correctly" in {
+    forAll(arrayExpressions)((expression, expected) => {
+      val parsedExpression = Parser.parseAll(expression)
+      val parsed = parsedExpression.success.value
+      val Success(actual) = evaluator.evaluate(parsed)
+      assert(actual === expected)
+    })
   }
 }

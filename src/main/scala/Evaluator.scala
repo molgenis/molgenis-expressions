@@ -43,9 +43,17 @@ object Evaluator {
     }
   }
 
+  def evaluateSetOp(left: Set[Any], right: Set[Any], op: SetOperator): Boolean = op match {
+    case Contains => left.intersect(right).nonEmpty
+    case NotContains => left.intersect(right).isEmpty
+    case AnyOf => left.intersect(right).nonEmpty
+    case AllOf => left.intersect(right) == right
+  }
+
   class Evaluator(context: scala.collection.Map[String, Any]) {
     def evaluate(expression: Expression): Try[Any] = expression match {
       case Constant(x) => Success(x)
+      case Array(x: List[Expression]) => Try(x.map(evaluate).map(_.get))
       case Variable(name) => Try(context(name))
       case BinaryOperation(binaryOp, leftExpr, rightExpr) =>
         val left = evaluate(leftExpr)
@@ -57,9 +65,18 @@ object Evaluator {
             val leftValue = left.get
             val rightValue = right.get
             binaryOp match {
-              case operator: ArrayOperator =>(leftValue, rightValue, operator) match {
-                case _ => Failure(new NotImplementedError())
+              case op: SetOperator =>
+                (leftValue, rightValue) match {
+                case (leftList: List[Any], rightList: List[Any]) =>
+                  Success(evaluateSetOp(leftList.toSet, rightList.toSet, op))
+                case (leftElement, rightList: List[Any]) =>
+                  Success(evaluateSetOp(Set(leftElement), rightList.toSet, op))
+                case (leftList: List[Any], rightElement) =>
+                  Success(evaluateSetOp(leftList.toSet, Set(rightElement), op))
+                case (leftElement, rightElement) =>
+                  Success(evaluateSetOp(Set(leftElement), Set(rightElement), op))
               }
+
               case operator: ArithmeticOperator => (leftValue, rightValue) match {
                 case (l: Double, r: Number) => arithmetic(operator, l, r.doubleValue())
                 case (l: Number, r: Double) => arithmetic(operator, l.doubleValue(), r)

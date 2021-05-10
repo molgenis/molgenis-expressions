@@ -7,11 +7,11 @@ case object Negate extends UnaryOperator
 
 sealed trait BinaryOperator
 
-sealed trait ArrayOperator extends BinaryOperator
-case object Contains extends ArrayOperator
-case object NotContains extends ArrayOperator
-case object AnyOf extends ArrayOperator
-case object AllOf extends ArrayOperator
+sealed trait SetOperator extends BinaryOperator
+case object Contains extends SetOperator
+case object NotContains extends SetOperator
+case object AnyOf extends SetOperator
+case object AllOf extends SetOperator
 
 sealed trait ArithmeticOperator extends BinaryOperator
 case object Power extends ArithmeticOperator
