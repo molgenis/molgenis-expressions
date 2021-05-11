@@ -22,6 +22,10 @@ publishTo := {
 
 publishMavenStyle := true
 publishM2Configuration := publishM2Configuration.value.withOverwrite(true)
+
+majorRegexes := List(""".*BREAKING CHANGE:.*""".r)
+minorRegexes := List("""^feat:.*""".r)
+bugfixRegexes := List("""^fix:.*""".r)
 defaultBump := None
 
 libraryDependencies += "com.lihaoyi" %%% "fastparse" % "2.3.2"
