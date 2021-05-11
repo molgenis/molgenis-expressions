@@ -9,12 +9,15 @@ pipeline {
         TIMESTAMP = sh(returnStdout: true, script: "date -u +'%F_%H-%M-%S'").trim()
         // https://stackoverflow.com/a/47684072/1973271
         SBT_OPTS = "-Duser.home=${JENKINS_AGENT_WORKDIR}"
+        NVM_DIR = "${JENKINS_AGENT_WORKDIR}/.nvm"
+        NODE_VERSION = "v12.22.1"
     }
     stages {
         stage('Prepare') {
             steps {
                 container('vault') {
                     script {
+                        sh "mkdir ${JENKINS_AGENT_WORKDIR}/.nvm"
                         sh "mkdir ${JENKINS_AGENT_WORKDIR}/.sbt"
                         sh "mkdir ${JENKINS_AGENT_WORKDIR}/.rancher"
                         sh(script: "vault read -field=value secret/ops/jenkins/rancher/cli2.json > ${JENKINS_AGENT_WORKDIR}/.rancher/cli2.json")
@@ -25,7 +28,14 @@ pipeline {
                     }
                 }
                 container('maven') {
-                    sh "git remote set-url origin https://$GITHUB_TOKEN@github.com/molgenis/molgenis-expressions.git"
+                    sh "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash"
+                    sh ". ${NVM_DIR}/nvm.sh && nvm install ${NODE_VERSION}"
+                    sh "ln -s ${NVM_DIR}/versions/node/${NODE_VERSION}/bin/node /usr/local/bin/node"
+                    sh "node --version"
+                    sh '''
+                      set +x
+                      git remote set-url origin https://$GITHUB_TOKEN@github.com/molgenis/molgenis-expressions.git
+                    '''
                     sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
                     sh "git config branch.master.remote origin"
                     sh "git config branch.master.merge refs/heads/master"
