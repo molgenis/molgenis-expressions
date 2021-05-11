@@ -56,16 +56,17 @@ class ParserSpec extends AnyFlatSpec with Tables {
     })
   }
 
-  val identifiers: TableFor2[String, Boolean] = Table(
+  val variables: TableFor2[String, Boolean] = Table(
     ("string", "valid"),
     ("abcDef", true),
     ("123String", false),
     ("$", true),
-    ("_", true)
+    ("_", true),
+    ("foo.bar", true)
   )
 
   "Expression parser" should "parse variables" in {
-    forAll(identifiers)((string, valid) => {
+    forAll(variables)((string, valid) => {
       val result = parse(s"{${string}}", Parser.expression(_))
       if (valid) {
         val Parsed.Success(value, _) = result
@@ -222,6 +223,13 @@ class ParserSpec extends AnyFlatSpec with Tables {
 
   it should "parse postfix operator after list" in {
     assert(Parser.parseAll("['foo'] notempty").success.value == UnaryOperation(NotEmpty, Array(List(Constant("foo")))))
+  }
+
+  it should "parse unary functions in logical expression" in {
+    assert(Parser.parseAll("{row.user_id} notempty and {roles} notempty").success.value ==
+      BinaryOperation(And,
+        UnaryOperation(NotEmpty, Variable("row.user_id")),
+        UnaryOperation(NotEmpty, Variable("roles"))))
   }
 
   val binaryFunctions: TableFor3[Option[String], String, BinaryOperator] = Table(

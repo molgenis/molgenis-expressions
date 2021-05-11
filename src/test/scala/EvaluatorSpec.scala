@@ -32,12 +32,12 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   val evaluator = new Evaluator.Evaluator(context, functions)
 
   "variable lookup" should "retrieve from context" in {
-    assert(evaluator.evaluate(Variable("foo")).get == "foo")
-    assert(evaluator.evaluate(Variable("bar")).get == 4.5)
+    assert(evaluator.evaluate(Variable("foo")).success.value == "foo")
+    assert(evaluator.evaluate(Variable("bar")).success.value == 4.5)
   }
 
-  it should "fail if not variable is not found" in {
-    assert(evaluator.evaluate(Variable("foobar")).isFailure)
+  it should "return null if not variable is not found" in {
+    assert(evaluator.evaluate(Variable("foobar")).success.value == null)
   }
 
   "integer expressions" should "evaluate addition" in {
@@ -118,6 +118,7 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     ("['a', 'c'] anyof ['a', 'b']", true),
     ("['a', 'c'] allof ['a', 'b']", false),
     ("['a', 'c', 'd'] allof ['a', 'c']", true),
+    ("[] contains 'a'", false),
     ("['a', 'c'] contains 'a'", true),
     ("['a', 'c'] contains 'b'", false),
     ("['a', 'c'] contains ['a']", true),
@@ -152,7 +153,7 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
       assert(evaluated.success.value === expected)
     })
   }
-  
+
   val functionExpressions: TableFor2[String, Any] = Table(
     ("expression", "value"),
     ("today()", LocalDate.now()),
@@ -167,5 +168,61 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
       val evaluated = evaluator.evaluate(parsed)
       assert(evaluated.success.value === expected)
     })
+  }
+
+  "null" should "equal null" in {
+    val parsedExpression = Parser.parseAll("null = null")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === true)
+  }
+
+  it should "be empty" in {
+    val parsedExpression = Parser.parseAll("null empty")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === true)
+  }
+
+  it should "not be notempty" in {
+    val parsedExpression = Parser.parseAll("null notempty")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === false)
+  }
+
+  it should "'notequal' defined values" in {
+    val parsedExpression = Parser.parseAll("null != 3")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === true)
+  }
+
+  it should "equal undefined" in {
+    val parsedExpression = Parser.parseAll("null = undefined")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === true)
+  }
+
+  it should "not 'equal' defined values" in {
+    val parsedExpression = Parser.parseAll("null = 3")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === false)
+  }
+
+  it should "'notcontains' things" in {
+    val parsedExpression = Parser.parseAll("null notcontains '3'")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === true)
+  }
+
+  it should "not 'contains' things" in {
+    val parsedExpression = Parser.parseAll("null contains '3'")
+    val parsed = parsedExpression.success.value
+    val evaluated = evaluator.evaluate(parsed)
+    assert(evaluated.success.value === false)
   }
 }

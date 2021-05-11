@@ -75,7 +75,7 @@ object Parser {
   def identifier[_: P]: P[String] = P((CharIn("A-Z", "a-z", "$", "_") ~ CharIn("A-Z", "a-z", "0-9", "$", "_").rep()).!)
     .opaque("<identifier>")
 
-  def variable[_: P]: P[Variable] = P("{" ~/ identifier.! ~ "}") map Variable
+  def variable[_: P]: P[Variable] = P("{" ~/ (identifier ~ ("." ~/ identifier).rep()).! ~ "}") map Variable
 
   def atom[_: P]: P[Expression] = P(nullValue | variable | constValue | array)
 
