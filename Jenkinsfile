@@ -76,8 +76,8 @@ pipeline {
                     steps {
                         container('maven') {
                             sh "./sbtx test"
-                            sh "./sbtx expressionsJVM/sonarScan"
-                            sh "./sbtx \"release with-defaults\""
+                            sh "./sbtx expressions/sonarScan"
+                            sh "./sbtx 'project expressions' 'release with-defaults'"
                         }
                     }
                     post {

@@ -12,21 +12,12 @@ lazy val root = project.in(file(".")).
 
 lazy val expressions = crossProject(JSPlatform, JVMPlatform).
   crossType(CrossType.Pure).
+  withoutSuffixFor(JVMPlatform).
   in(file("expressions")).
   settings(
     idePackagePrefix := Some("org.molgenis.expression"),
     organization := "org.molgenis",
     name := "molgenis-expressions",
-    publishMavenStyle := true,
-    publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
-    credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
-    publishTo := {
-      val nexus = "https://registry.molgenis.org/"
-      if (isSnapshot.value)
-        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-snapshots")
-      else
-        Some("Sonatype Nexus Repository Manager"  at nexus + "repository/maven-releases")
-    },
     majorRegexes := List(""".*BREAKING CHANGE:.*""".r),
     minorRegexes := List("""^feat:.*""".r),
     bugfixRegexes := List("""^fix:.*""".r),
@@ -42,6 +33,16 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     )).
   jvmSettings(
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % "test",
+    publishMavenStyle := true,
+    publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
+    credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
+    publishTo := {
+      val nexus = "https://registry.molgenis.org/"
+      if (isSnapshot.value)
+        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-snapshots")
+      else
+        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-releases")
+    },
   ).
   jsSettings(
     scalaJSLinkerConfig ~= { _.withSemantics(_.withStrictFloats(true)) }
