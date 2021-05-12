@@ -5,8 +5,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.{TableFor2, Tables}
 
-import java.time.temporal.ChronoUnit.YEARS
-import java.time.{LocalDate, LocalDateTime, Period}
+//import java.time.temporal.ChronoUnit.YEARS
+//import java.time.{LocalDate, LocalDateTime, Period}
 import scala.util.Success
 
 class EvaluatorSpec extends AnyFlatSpec with Tables {
@@ -14,17 +14,17 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   val context: Map[String, Any] = Map(
     "foo" -> "foo",
     "bar" -> 4.5,
-    "ten" -> 10,
-    "dob" -> LocalDate.now().minusYears(1))
+    "ten" -> 10)
+//    "dob" -> LocalDate.now().minusYears(1))
 
-  def age(x: LocalDate): Long = Period.between(x, LocalDate.now.plusDays(1)).get(YEARS)
+//  def age(x: LocalDate): Long = Period.between(x, LocalDate.now.plusDays(1)).get(YEARS)
   val functions:Map[String, List[Any] => Any] = Map(
-    "today" -> (_ => LocalDate.now()),
-    "age" -> ((params: List[Any]) => params.head match {
-      case x: LocalDate => age(x)
-      case x: LocalDateTime => age(x.toLocalDate)
-      case x: String => age(LocalDate.parse(x))
-    }),
+//    "today" -> (_ => LocalDate.now()),
+//    "age" -> ((params: List[Any]) => params.head match {
+//      case x: LocalDate => age(x)
+//      case x: LocalDateTime => age(x.toLocalDate)
+//      case x: String => age(LocalDate.parse(x))
+//    }),
     "matches" -> ((params: List[Any]) => params match {
       case List(regex: String, value: String) => regex.r.matches(value)
     })
@@ -49,8 +49,8 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   it should "evaluate multiplication" in {
     assert(evaluator.evaluate(BinaryOperation(Multiply, Constant(9), Constant(4))).success.value == 36)
   }
-  it should "evaluate integer division" in {
-    assert(evaluator.evaluate(BinaryOperation(Divide, Constant(9L), Constant(4))).success.value == 2)
+  it should "evaluate integer division as though they were doubles" in {
+    assert(evaluator.evaluate(BinaryOperation(Divide, Constant(9), Constant(4))).success.value == 2.25)
   }
   it should "evaluate integer modulo" in {
     assert(evaluator.evaluate(BinaryOperation(Modulo, Constant(9), Constant(4))).success.value == 1)
@@ -68,13 +68,13 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   it should "evaluate integer division" in {
     assert(evaluator.evaluate(BinaryOperation(Divide, Constant(9f), Constant(4f))).success.value == 2.25)
   }
-  it should "fail to evaluate integer modulo" in {
-    assert(evaluator.evaluate(BinaryOperation(Modulo, Constant(9f), Constant(4)))
-      .failure.exception.getMessage == "Modulo operation can only be used on integer types")
+  it should "rounds floats to evaluate integer modulo" in {
+    assert(evaluator.evaluate(BinaryOperation(Modulo, Constant(9.1), Constant(4)))
+      .success.value == 1)
   }
   it should "fail to evaluate for non-numeric arguments" in {
-    assert(evaluator.evaluate(BinaryOperation(Add, Constant("Hello"), Constant(2)))
-      .failure.exception.getMessage == "Cannot Add String and Integer")
+    assert(evaluator.evaluate(BinaryOperation(Add, Constant("Hello"), Constant("Blah")))
+      .failure.exception.getMessage == "Cannot Add String and String")
   }
 
   "nested expressions" should "evaluate correctly" in {
@@ -156,9 +156,9 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
 
   val functionExpressions: TableFor2[String, Any] = Table(
     ("expression", "value"),
-    ("today()", LocalDate.now()),
-    ("age({dob})", age(context("dob").asInstanceOf[LocalDate])),
-    ("age('2020-01-01')", age(LocalDate.of(2020, 1, 1))),
+//    ("today()", LocalDate.now()),
+//    ("age({dob})", age(context("dob").asInstanceOf[LocalDate])),
+//    ("age('2020-01-01')", age(LocalDate.of(2020, 1, 1))),
     ("matches('(ab)+', 'ababab')", true)
   )
   "function evaluation" should "call function from context" in {

@@ -7,6 +7,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/expressions" />
+            <option value="$PROJECT_DIR$/expressions/.js" />
+            <option value="$PROJECT_DIR$/expressions/.jvm" />
             <option value="$PROJECT_DIR$/project" />
           </set>
         </option>

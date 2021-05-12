@@ -1,7 +1,8 @@
 package org.molgenis.expression
 
 import fastparse._
-import Parser.ParseError
+import org.molgenis.expression
+import org.molgenis.expression.Parser.ParseError
 import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.{forAll, whenever}
@@ -77,11 +78,11 @@ class ParserSpec extends AnyFlatSpec with Tables {
     })
   }
 
-  val arrays: TableFor2[String, Array] = Table(
+  val arrays: TableFor2[String, expression.Array] = Table(
     ("string", "array"),
-    ("[]", Array(List())),
-    ("[3, 2.0, 0]", Array(List(Constant(3), Constant(2.0), Constant(0)))),
-    ("['foo', 'bar']", Array(List(Constant("foo"), Constant("bar"))))
+    ("[]", expression.Array(List())),
+    ("[3, 2.0, 0]", expression.Array(List(Constant(3), Constant(2.0), Constant(0)))),
+    ("['foo', 'bar']", expression.Array(List(Constant("foo"), Constant("bar"))))
   )
   it should "parse arrays" in {
     forAll(arrays)((string, array) => {
@@ -116,7 +117,7 @@ class ParserSpec extends AnyFlatSpec with Tables {
 
   "Binary functions" should "parse contains" in {
     assert((Parser.parseAll("{bar} contains ['foo']")).success.value ==
-      BinaryOperation(Contains, Variable("bar"), Array(List(Constant("foo")))))
+      BinaryOperation(Contains, Variable("bar"), expression.Array(List(Constant("foo")))))
   }
 
   "Power" should "parse" in {
@@ -222,7 +223,7 @@ class ParserSpec extends AnyFlatSpec with Tables {
   }
 
   it should "parse postfix operator after list" in {
-    assert(Parser.parseAll("['foo'] notempty").success.value == UnaryOperation(NotEmpty, Array(List(Constant("foo")))))
+    assert(Parser.parseAll("['foo'] notempty").success.value == expression.UnaryOperation(NotEmpty, expression.Array(List(Constant("foo")))))
   }
 
   it should "parse unary functions in logical expression" in {
@@ -243,7 +244,7 @@ class ParserSpec extends AnyFlatSpec with Tables {
   "Binary functions" should "parse array expression" in {
     forAll(binaryFunctions)((_, name, operator) => assert(
       Parser.parseAll(s"{foo} ${name} [1, 2]").get ==
-        BinaryOperation(operator, Variable("foo"), Array(List(Constant(1), Constant(2))))
+        expression.BinaryOperation(operator, Variable("foo"), expression.Array(List(Constant(1), Constant(2))))
     ))
   }
 
@@ -252,7 +253,7 @@ class ParserSpec extends AnyFlatSpec with Tables {
       whenever(sign.isDefined) {
         assert(
           Parser.parseAll(s"{foo} ${sign.get} [1, 2]").get ==
-            BinaryOperation(operator, Variable("foo"), Array(List(Constant(1), Constant(2))))
+            expression.BinaryOperation(operator, Variable("foo"), expression.Array(List(Constant(1), Constant(2))))
         )
       })
   }

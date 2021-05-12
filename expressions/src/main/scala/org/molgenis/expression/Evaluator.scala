@@ -1,37 +1,24 @@
 package org.molgenis.expression
 
-import scala.util.{Failure, Success, Try}
 import scala.language.implicitConversions
+import scala.util.{Failure, Success, Try}
 
 object Evaluator {
 
-  def integerArithmetic[T](operator: ArithmeticOperator, a: T, b: T)
-                          (implicit num: Integral[T], f: T => Long): Try[Long] = {
+  def arithmetic(operator: ArithmeticOperator, a: Double, b: Double): Try[Double] = {
     operator match {
-      case Power => Try(scala.math.pow(a.toDouble, b.toDouble).longValue())
+      case Power => Try(scala.math.pow(a, b))
       case Multiply => Try(a * b)
       case Divide => Try(a / b)
       case Add => Try(a + b)
       case Subtract => Try(a - b)
-      case Modulo => Try(a % b)
-    }
-  }
-
-  def arithmetic[T] (operator: ArithmeticOperator, a: T, b: T)
-                    (implicit num: Fractional[T], f: T => Double): Try[Double] = {
-    operator match {
-      case Power => Try(scala.math.pow(a.toDouble, b.toDouble))
-      case Multiply => Try(a * b)
-      case Divide => Try(a / b)
-      case Add => Try(a + b)
-      case Subtract => Try(a - b)
-      case Modulo =>
-        Failure(new IllegalArgumentException("Modulo operation can only be used on integer types"))
+      case Modulo => Try(a.toLong % b.toLong)
     }
   }
 
   def getVariables(expression: Expression): Set[String] = {
     implicit def listToSet(list: List[String]): Set[String] = list.toSet
+
     expression match {
       case UnaryOperation(_, operand) => getVariables(operand)
       case BinaryOperation(_, left, right) => getVariables(left) ++ getVariables(right)
@@ -68,24 +55,18 @@ object Evaluator {
             binaryOp match {
               case op: SetOperator =>
                 (leftValue, rightValue) match {
-                case (leftList: List[Any], rightList: List[Any]) =>
-                  Success(evaluateSetOp(leftList.toSet, rightList.toSet, op))
-                case (leftElement, rightList: List[Any]) =>
-                  Success(evaluateSetOp(Set(leftElement), rightList.toSet, op))
-                case (leftList: List[Any], rightElement) =>
-                  Success(evaluateSetOp(leftList.toSet, Set(rightElement), op))
-                case (leftElement, rightElement) =>
-                  Success(evaluateSetOp(Set(leftElement), Set(rightElement), op))
-              }
+                  case (leftList: List[Any], rightList: List[Any]) =>
+                    Success(evaluateSetOp(leftList.toSet, rightList.toSet, op))
+                  case (leftElement, rightList: List[Any]) =>
+                    Success(evaluateSetOp(Set(leftElement), rightList.toSet, op))
+                  case (leftList: List[Any], rightElement) =>
+                    Success(evaluateSetOp(leftList.toSet, Set(rightElement), op))
+                  case (leftElement, rightElement) =>
+                    Success(evaluateSetOp(Set(leftElement), Set(rightElement), op))
+                }
 
               case operator: ArithmeticOperator => (leftValue, rightValue) match {
-                case (l: Double, r: Number) => arithmetic(operator, l, r.doubleValue())
-                case (l: Number, r: Double) => arithmetic(operator, l.doubleValue(), r)
-                case (l: Float, r: Number) => arithmetic(operator, l, r.floatValue())
-                case (l: Number, r: Float) => arithmetic(operator, l.floatValue(), r)
-                case (l: Long, r: Number) => integerArithmetic(operator, l, r.longValue())
-                case (l: Number, r: Long) => integerArithmetic(operator, l.longValue(), r)
-                case (l: Int, r: Int) => integerArithmetic(operator, l, r)
+                case (l: Number, r: Number) => arithmetic(operator, l.doubleValue(), r.doubleValue())
                 case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue.getClass.getSimpleName} and ${rightValue.getClass.getSimpleName}"))
               }
               case operator: ComparisonOperator => (leftValue, rightValue, operator) match {
@@ -125,7 +106,7 @@ object Evaluator {
         }
       }
       case FunctionEvaluation(name, args) =>
-          Try(functions(name).apply(args.map(evaluate).map(_.get)))
+        Try(functions(name).apply(args.map(evaluate).map(_.get)))
     }
   }
 }

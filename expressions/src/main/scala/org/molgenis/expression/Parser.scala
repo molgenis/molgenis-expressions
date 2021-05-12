@@ -7,7 +7,7 @@ import fastparse._
 import scala.util.Try
 
 object Parser {
-  private def precedence(op: BinaryOperator):Int = op match {
+  private def precedence(op: BinaryOperator): Int = op match {
     case _: SetOperator => 7
     case Power => 6
     case Multiply | Divide | Modulo => 5
@@ -18,8 +18,11 @@ object Parser {
   }
 
   private sealed trait Associativity
+
   private case object LeftAssociative extends Associativity
+
   private case object RightAssociative extends Associativity
+
   private def associativity(op: BinaryOperator): Associativity = op match {
     case Power => RightAssociative
     case _ => LeftAssociative
@@ -29,7 +32,7 @@ object Parser {
 
   def digit[_: P]: P[String] = P(CharIn("0-9").!)
 
-  def wholeNumber[_: P]: P[Number] = P(("-".? ~ digit.rep(1)).!
+  def wholeNumber[_: P]: P[Number] = P((P("-").? ~ digit.rep(1)).!
     .opaque("<whole number>").map {
     _.toLong
   })
@@ -84,18 +87,23 @@ object Parser {
       IgnoreCase("notempty").map(_ => NotEmpty))
 
   def unaryOperation[_: P]: P[Expression] =
-    P((("!" | IgnoreCase("negate")) ~/ expression.map {UnaryOperation(Negate, _)} )|
+    P((("!" | IgnoreCase("negate")) ~/ expression.map {
+      UnaryOperation(Negate, _)
+    }) |
       (atom ~ unFunction.?).map {
         case (atom, None) => atom
         case (operand, Some(op)) => UnaryOperation(op, operand)
       })
-  def functionOperation[_:P]: P[FunctionEvaluation] =
-    P((identifier ~ "(" ~/ expression.rep(sep=",") ~ ")")
-      .map { case(name, args) => FunctionEvaluation(name, args.toList)})
-  def array[_:P]: P[Array] = P(("[" ~/ expression.rep(sep=",") ~ "]").map( items => Array(items.toList)))
-  def factor[_:P]: P[Expression] = P("(" ~/ expression ~ ")" | functionOperation | unaryOperation )
 
-  def binFunctions[_:P]: P[BinaryOperator] = P(
+  def functionOperation[_: P]: P[FunctionEvaluation] =
+    P((identifier ~ "(" ~/ expression.rep(sep = ",") ~ ")")
+      .map { case (name, args) => FunctionEvaluation(name, args.toList) })
+
+  def array[_: P]: P[Array] = P(("[" ~/ expression.rep(sep = ",") ~ "]").map(items => Array(items.toList)))
+
+  def factor[_: P]: P[Expression] = P("(" ~/ expression ~ ")" | functionOperation | unaryOperation)
+
+  def binFunctions[_: P]: P[BinaryOperator] = P(
     ("*=" | IgnoreCase("contains")).map(_ => Contains) |
       IgnoreCase("notcontains").map(_ => NotContains) |
       IgnoreCase("anyof").map(_ => AnyOf) |
@@ -115,10 +123,12 @@ object Parser {
       ("&&" | IgnoreCase("and")).map(_ => And) |
       ("||" | IgnoreCase("or")).map(_ => Or)
   )
-  def expression[_:P] : P[Expression] = (factor ~ (binFunctions ~/ factor).rep()).map({
+
+  def expression[_: P]: P[Expression] = (factor ~ (binFunctions ~/ factor).rep()).map({
     case (pre, fs) =>
       // Use precedence climbing algorithm to shape the operator tree
       var remaining = fs
+
       def climb(minPrec: Int, current: Expression): Expression = {
         var result = current
         while (remaining.headOption match {
@@ -136,10 +146,11 @@ object Parser {
         }) ()
         result
       }
+
       climb(0, pre)
   })
 
-  def expressionEnd[_:P]: P[Expression] = P(expression ~ End)
+  def expressionEnd[_: P]: P[Expression] = P(expression ~ End)
 
   case class ParseError(msg: String, index: Int) extends Exception(msg)
 

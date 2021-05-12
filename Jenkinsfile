@@ -50,7 +50,8 @@ pipeline {
                 stage('Build, Test') {
                     steps {
                         container('maven') {
-                            sh "./sbtx test sonarScan"
+                            sh "./sbtx test"
+                            sh "./sbtx expressionsJVM/sonarScan"
                         }
                     }
                     post {
@@ -74,7 +75,8 @@ pipeline {
                 stage('Build, Test, Push to Registries [ master ]') {
                     steps {
                         container('maven') {
-                            sh "./sbtx test sonarScan"
+                            sh "./sbtx test"
+                            sh "./sbtx expressionsJVM/sonarScan"
                             sh "./sbtx \"release with-defaults\""
                         }
                     }
