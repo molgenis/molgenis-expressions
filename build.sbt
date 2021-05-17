@@ -8,7 +8,6 @@ ThisBuild / scalaVersion := "2.13.5"
 lazy val root = project.in(file(".")).
   aggregate(expressionsJVM, expressionsJS)
 
-
 lazy val expressions = crossProject(JSPlatform, JVMPlatform).
   crossType(CrossType.Full).
   withoutSuffixFor(JVMPlatform).
@@ -31,7 +30,7 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     )).
   jvmSettings(
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
+    libraryDependencies += "com.github.ben-manes.caffeine" % "caffeine" % "2.8.2",
     publishMavenStyle := true,
     publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
     credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
