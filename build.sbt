@@ -1,4 +1,5 @@
 import autoversion.Keys.{bugfixRegexes, defaultBump, minorRegexes}
+import org.scalajs.linker.interface.OutputPatterns
 import sbt.Keys.{libraryDependencies, name, publishMavenStyle, publishTo}
 import sbtsonar.SonarPlugin.autoImport.sonarProperties
 
@@ -32,7 +33,8 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
       "sonar.tests" -> "expressions/src/test/scala"
     )).
   jvmSettings(
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
+    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.0.0" % Provided,
     publishMavenStyle := true,
     publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
     credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
@@ -45,8 +47,12 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     },
   ).
   jsSettings(
-    scalaJSLinkerConfig ~= { _.withSemantics(_.withStrictFloats(true)) }
-//    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time-tzdb" % "2.0.0-RC3_2019a"
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.ESModule)
+        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
+    },
+//    scalaJSLinkerConfig ~= { _.withSemantics(_.withStrictFloats(true)) }
+    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time-tzdb" % "2.0.0"
   )
 
 lazy val expressionsJVM = expressions.jvm

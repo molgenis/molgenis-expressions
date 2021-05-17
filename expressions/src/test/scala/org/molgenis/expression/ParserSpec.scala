@@ -116,7 +116,7 @@ class ParserSpec extends AnyFlatSpec with Tables {
   }
 
   "Binary functions" should "parse contains" in {
-    assert((Parser.parseAll("{bar} contains ['foo']")).success.value ==
+    assert(Parser.parseAll("{bar} contains ['foo']").success.value ==
       BinaryOperation(Contains, Variable("bar"), expression.Array(List(Constant("foo")))))
   }
 
