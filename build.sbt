@@ -4,6 +4,7 @@ import sbt.Keys.{libraryDependencies, name, publishMavenStyle, publishTo}
 import sbtsonar.SonarPlugin.autoImport.sonarProperties
 
 ThisBuild / scalaVersion := "2.13.5"
+ThisBuild / versionScheme := Some("early-semver")
 
 lazy val root = project.in(file(".")).
   aggregate(expressionsJVM, expressionsJS)
@@ -50,6 +51,20 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
 //    scalaJSLinkerConfig ~= { _.withSemantics(_.withStrictFloats(true)) }
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time-tzdb" % "2.0.0"
   )
+
+pomExtra :=
+  <developers>
+    <developer>
+      <name>Fleur Kelpin</name>
+      <email>f.kelpin@umcg.nl</email>
+    </developer>
+  </developers>
+    <scm>
+      <connection>scm:git:git@github.com:molgenis/molgenis-expressions.git</connection>
+      <developerConnection>scm:git:git@github.com:molgenis/molgenis-expressions.git</developerConnection>
+      <url>git@github.com:molgenis/molgenis-expressions.git</url>
+    </scm>
+
 
 lazy val expressionsJVM = expressions.jvm
 lazy val expressionsJS = expressions.js
