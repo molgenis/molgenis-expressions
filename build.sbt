@@ -5,18 +5,15 @@ import sbtsonar.SonarPlugin.autoImport.sonarProperties
 
 ThisBuild / scalaVersion := "2.13.5"
 
-Global / excludeLintKeys += idePackagePrefix
-
 lazy val root = project.in(file(".")).
   aggregate(expressionsJVM, expressionsJS)
 
 
 lazy val expressions = crossProject(JSPlatform, JVMPlatform).
-  crossType(CrossType.Pure).
+  crossType(CrossType.Full).
   withoutSuffixFor(JVMPlatform).
-  in(file("expressions")).
+  in(file(".")).
   settings(
-    idePackagePrefix := Some("org.molgenis.expression"),
     organization := "org.molgenis",
     name := "molgenis-expressions",
     majorRegexes := List(""".*BREAKING CHANGE:.*""".r),
@@ -29,12 +26,12 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     sonarProperties ++= Map(
       "sonar.host.url" -> "https://sonarcloud.io",
       "sonar.organization" -> "molgenis",
-      "sonar.sources" -> "expressions/src/main/scala",
-      "sonar.tests" -> "expressions/src/test/scala"
+      "sonar.sources" -> "shared/src/main/scala",
+      "sonar.tests" -> "shared/src/test/scala"
     )).
   jvmSettings(
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
-    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.0.0" % Provided,
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
     publishMavenStyle := true,
     publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
     credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),

@@ -20,14 +20,14 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     "dob" -> LocalDate.now().minusYears(1)
   )
 
-//  def age(x: LocalDate): Long = Period.between(x, LocalDate.now.plusDays(1)).get(YEARS)
-  val functions:Map[String, Seq[Any] => Any] = Map(
-//    "today" -> (_ => LocalDate.now()),
-//    "age" -> ((params: List[Any]) => params.head match {
-//      case x: LocalDate => age(x)
-//      case x: LocalDateTime => age(x.toLocalDate)
-//      case x: String => age(LocalDate.parse(x))
-//    }),
+  //  def age(x: LocalDate): Long = Period.between(x, LocalDate.now.plusDays(1)).get(YEARS)
+  val functions: Map[String, Seq[Any] => Any] = Map(
+    //    "today" -> (_ => LocalDate.now()),
+    //    "age" -> ((params: List[Any]) => params.head match {
+    //      case x: LocalDate => age(x)
+    //      case x: LocalDateTime => age(x.toLocalDate)
+    //      case x: String => age(LocalDate.parse(x))
+    //    }),
     "matches" -> ((params: Seq[Any]) => params match {
       case List(regex: String, value: String) => regex.r.matches(value)
     })
@@ -77,7 +77,7 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   }
   it should "fail to evaluate for non-numeric arguments" in {
     assert(evaluator.evaluate(BinaryOperation(Add, Constant("Hello"), Constant("Blah")))
-      .failure.exception.getMessage == "Cannot Add String and String")
+      .failure.exception.getMessage == "Cannot Add Hello and Blah")
   }
 
   "nested expressions" should "evaluate correctly" in {
@@ -159,9 +159,9 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
 
   val functionExpressions: TableFor2[String, Any] = Table(
     ("expression", "value"),
-//    ("today()", LocalDate.now()),
-//    ("age({dob})", age(context("dob").asInstanceOf[LocalDate])),
-//    ("age('2020-01-01')", age(LocalDate.of(2020, 1, 1))),
+    //    ("today()", LocalDate.now()),
+    //    ("age({dob})", age(context("dob").asInstanceOf[LocalDate])),
+    //    ("age('2020-01-01')", age(LocalDate.of(2020, 1, 1))),
     ("matches('(ab)+', 'ababab')", true)
   )
   "function evaluation" should "call function from context" in {

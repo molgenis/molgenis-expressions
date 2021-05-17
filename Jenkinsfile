@@ -51,7 +51,7 @@ pipeline {
                     steps {
                         container('maven') {
                             sh "./sbtx test"
-                            sh "./sbtx expressionsJVM/sonarScan"
+                            sh "./sbtx expressions/sonarScan"
                         }
                     }
                     post {

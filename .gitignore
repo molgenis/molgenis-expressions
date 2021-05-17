@@ -2,5 +2,5 @@ target/
 project/target
 .scannerwork/
 .bsp/
-
-.idea/sonarlint/issuestore/
+node_modules/
+.idea/sonarlint/

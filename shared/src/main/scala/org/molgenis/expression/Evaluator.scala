@@ -67,7 +67,7 @@ object Evaluator {
 
               case operator: ArithmeticOperator => (leftValue, rightValue) match {
                 case (l: Number, r: Number) => arithmetic(operator, l.doubleValue(), r.doubleValue())
-                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue.getClass.getSimpleName} and ${rightValue.getClass.getSimpleName}"))
+                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue} and ${rightValue}"))
               }
               case operator: ComparisonOperator => (leftValue, rightValue, operator) match {
                 case (l: Number, r: Number, Less) => Success(l.doubleValue() < r.doubleValue())
@@ -82,12 +82,12 @@ object Evaluator {
                 case (_, null, NotEqual) => Success(true)
                 case (l: Number, r: Number, GreaterOrEqual) => Success(l.doubleValue() >= r.doubleValue())
                 case (l: Number, r: Number, Greater) => Success(l.doubleValue() > r.doubleValue())
-                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue.getClass.getSimpleName} and ${rightValue.getClass.getSimpleName}"))
+                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue} and ${rightValue}"))
               }
               case operator: BooleanOperator => (leftValue, rightValue, operator) match {
                 case (b1: Boolean, b2: Boolean, And) => Success(b1 && b2)
                 case (b1: Boolean, b2: Boolean, Or) => Success(b1 || b2)
-                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue.getClass.getSimpleName} and ${rightValue.getClass.getSimpleName}"))
+                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue} and ${rightValue}"))
               }
             }
 
@@ -102,7 +102,7 @@ object Evaluator {
           case (NotEmpty, c: Iterable[Any]) => Success(c.nonEmpty)
           case (NotEmpty, s: String) => Success(s.nonEmpty)
           case (NotEmpty, null) => Success(false)
-          case _ => Failure(new IllegalArgumentException(s"Cannot ${op} ${value.getClass.getSimpleName}"))
+          case _ => Failure(new IllegalArgumentException(s"Cannot ${op} ${value}"))
         }
       }
       case FunctionEvaluation(name, args) =>
