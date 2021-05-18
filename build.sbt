@@ -34,16 +34,17 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
   jvmSettings(
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
     libraryDependencies += "com.github.ben-manes.caffeine" % "caffeine" % "2.8.2",
-    publishMavenStyle := true,
-    publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
-    credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
-    publishTo := {
-      val nexus = "https://registry.molgenis.org/"
-      if (isSnapshot.value)
-        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-snapshots")
-      else
-        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-releases")
-    },
+    publish / skip := true,
+//    publishMavenStyle := true,
+//    publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
+//    credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
+//    publishTo := {
+//      val nexus = "https://registry.molgenis.org/"
+//      if (isSnapshot.value)
+//        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-snapshots")
+//      else
+//        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-releases")
+//    },
     scmInfo := Some(ScmInfo(new URL("https://github.com/molgenis/molgenis-expressions"),
       "https://github.com/molgenis/molgenis-expressions.git"))
   ).
@@ -77,7 +78,7 @@ releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-//  publishArtifacts,
+  publishArtifacts,
   publishNpm,
   setNextVersion,
   commitNextVersion,
