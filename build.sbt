@@ -42,6 +42,9 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
       else
         Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-releases")
     },
+    scmInfo := Some(
+      ScmInfo.apply(new URL("https://github.com/molgenis/molgenis-expressions"),
+        "https://github.com/molgenis/molgenis-expressions.git"))
   ).
   jsSettings(
     scalaJSLinkerConfig ~= {
@@ -52,18 +55,7 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time-tzdb" % "2.0.0"
   )
 
-pomExtra :=
-  <developers>
-    <developer>
-      <name>Fleur Kelpin</name>
-      <email>f.kelpin@umcg.nl</email>
-    </developer>
-  </developers>
-    <scm>
-      <connection>scm:git:git@github.com:molgenis/molgenis-expressions.git</connection>
-      <developerConnection>scm:git:git@github.com:molgenis/molgenis-expressions.git</developerConnection>
-      <url>git@github.com:molgenis/molgenis-expressions.git</url>
-    </scm>
+
 
 
 lazy val expressionsJVM = expressions.jvm
