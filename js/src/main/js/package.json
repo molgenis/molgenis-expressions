@@ -1,0 +1,21 @@
+{
+  "name": "@fdlk/expressions",
+  "version": "0.0.1",
+  "description": "Expression language for MOLGENIS",
+  "main": "main.mjs",
+  "files": ["dist"],
+  "private": false,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/molgenis/molgenis-expressions.git"
+  },
+  "author": "Fleur Kelpin",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/molgenis/molgenis-expressions/issues"
+  },
+  "homepage": "https://github.com/molgenis/molgenis-expressions#readme"
+}
