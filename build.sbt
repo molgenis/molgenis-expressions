@@ -78,6 +78,7 @@ lazy val setVersionNpm = ReleaseStep(action = st => {
   if (npmSetVersion.! != 0) {
     throw new IllegalStateException("Failed to publish")
   }
+  
   st
 })
 
