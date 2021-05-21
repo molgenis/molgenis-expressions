@@ -31,6 +31,7 @@ pipeline {
                     sh "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash"
                     sh ". ${NVM_DIR}/nvm.sh && nvm install ${NODE_VERSION}"
                     sh "ln -s ${NVM_DIR}/versions/node/${NODE_VERSION}/bin/node /usr/local/bin/node"
+                    sh "ln -s ${NVM_DIR}/versions/node/${NODE_VERSION}/bin/npm /usr/local/bin/npm"
                     sh "node --version"
                     sh '''
                       set +x
