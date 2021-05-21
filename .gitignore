@@ -4,3 +4,4 @@ project/target
 .bsp/
 node_modules/
 .idea/sonarlint/
+dist/
