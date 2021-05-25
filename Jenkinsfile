@@ -41,6 +41,8 @@ pipeline {
                     sh "git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*"
                     sh "git config branch.master.remote origin"
                     sh "git config branch.master.merge refs/heads/master"
+                    sh "npm config set unsafe-perm true"
+                    sh "set +x; npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}"
                 }
             }
         }
@@ -80,7 +82,6 @@ pipeline {
                             sh "./sbtx test fullOptJS"
                             sh "./sbtx expressions/sonarScan"
                             sh "./sbtx 'project expressions' 'release with-defaults'"
-                            sh "set +x; npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}"
                             sh "npm publish"
                         }
                     }
