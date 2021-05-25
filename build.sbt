@@ -75,10 +75,10 @@ lazy val setVersionNpm = ReleaseStep(action = st => {
   val version = extracted.get(Keys.version)
   val shell: Seq[String] = Seq("sh", "-c")
   val npmSetVersion: Seq[String] = shell :+ s"npm version ${version} --no-git-tag-version"
-  if (npmSetVersion.! != 0) {
+  val gitAddNpmVersion: Seq[String] = shell :+ "git add package.json"
+  if ((npmSetVersion #&& gitAddNpmVersion).! != 0) {
     throw new IllegalStateException("Failed to publish")
   }
-  
   st
 })
 
