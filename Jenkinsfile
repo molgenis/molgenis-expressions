@@ -25,6 +25,7 @@ pipeline {
                         env.SONAR_TOKEN = sh(script: 'vault read -field=value secret/ops/token/sonar', returnStdout: true)
                         env.GITHUB_TOKEN = sh(script: 'vault read -field=value secret/ops/token/github', returnStdout: true)
                         env.GITHUB_USER = sh(script: 'vault read -field=username secret/ops/token/github', returnStdout: true)
+                        env.NPM_TOKEN = sh(script: 'vault read -field=value secret/ops/token/npm', returnStdout: true)
                     }
                 }
                 container('maven') {
@@ -79,6 +80,8 @@ pipeline {
                             sh "./sbtx test"
                             sh "./sbtx expressions/sonarScan"
                             sh "./sbtx 'project expressions' 'release with-defaults'"
+                            sh "set +x; npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}"
+                            sh "npm publish"
                         }
                     }
                     post {
