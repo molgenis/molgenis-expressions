@@ -7,7 +7,7 @@
     "dist"
   ],
   "scripts": {
-    "prepublishOnly": "rm -rf dist && cp -r .js/target/scala-2.13/molgenis-expressions-opt ./dist"
+    "prepublishOnly": "rm -rf dist && cp -r js/target/scala-2.13/molgenis-expressions-opt ./dist"
   },
   "repository": {
     "type": "git",
