@@ -11,6 +11,7 @@ pipeline {
         SBT_OPTS = "-Duser.home=${JENKINS_AGENT_WORKDIR}"
         NVM_DIR = "${JENKINS_AGENT_WORKDIR}/.nvm"
         NODE_VERSION = "v12.22.1"
+        npm_config_registry = "https://registry.npmjs.org"
     }
     stages {
         stage('Prepare') {
