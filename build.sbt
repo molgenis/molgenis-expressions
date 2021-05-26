@@ -66,8 +66,6 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
       _.withModuleKind(ModuleKind.ESModule)
         .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
     },
-    //    scalaJSLinkerConfig ~= { _.withSemantics(_.withStrictFloats(true)) }
-    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time-tzdb" % "2.0.0"
   )
 
 lazy val setVersionNpm = ReleaseStep(action = st => {
