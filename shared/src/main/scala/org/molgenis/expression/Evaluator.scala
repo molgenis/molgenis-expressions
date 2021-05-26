@@ -1,9 +1,11 @@
 package org.molgenis.expression
 
+import java.time.{LocalDate, ZoneOffset}
 import scala.language.implicitConversions
 import scala.util.{Failure, Success, Try}
 
 object Evaluator {
+  def age: LocalDate => Int = (d: LocalDate) => d.until(LocalDate.now(ZoneOffset.UTC)).getYears
 
   def arithmetic(operator: ArithmeticOperator, a: Double, b: Double): Try[Double] = {
     operator match {

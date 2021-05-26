@@ -18,7 +18,7 @@ class packageTest extends AnyFlatSpec {
   "ageConvert" should "Convert string" in {
     assert(expression.ageConvert(List(threeYearsAgo.toString)) == 3)
   }
-  "ageConvert" should "Convert js Date" in {
+  it should "Convert js Date" in {
     val time = new js.Date(threeYearsAgo.atStartOfDay(ZoneOffset.UTC).toEpochSecond * 1000.0)
     assert(expression.ageConvert(List(time)) == 3)
   }

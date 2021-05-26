@@ -1,17 +1,21 @@
 package org.molgenis
 
+import org.molgenis.expression.Evaluator.age
+
 import java.time.{Instant, LocalDate, ZoneOffset}
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.scalajs.js.|
 import scala.util.{Failure, Success, Try}
 
 package object expression {
-  def age: LocalDate => Int = (d: LocalDate) => d.until(LocalDate.now(ZoneOffset.UTC).plusDays(1)).getYears
-  def ageConvert: List[Any] => Int = (p: List[Any]) => p.head match {
+  def ageConvert: List[Any] => Int|Null = (p: List[Any]) => p.head match {
     case l: LocalDate => age(l)
     case s: String => age(LocalDate.parse(s))
     case d: js.Date => age(Instant.parse(d.toISOString).atOffset(ZoneOffset.UTC).toLocalDate)
+    case x if js.isUndefined(x) => null
+    case null => null
   }
   def today: List[Any] => LocalDate = _ => LocalDate.now()
 

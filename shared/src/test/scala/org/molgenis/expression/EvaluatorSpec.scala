@@ -216,4 +216,14 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     val evaluated = evaluator.evaluate(parsed)
     assert(evaluated.success.value === false)
   }
+
+  "age" should "be one if your first birthday is today" in {
+    val todayAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1)
+    assert(Evaluator.age(todayAYearAgo) == 1)
+  }
+
+  it should "be zero if your birthday is tomorrow" in {
+    val tomorrowAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1).plusDays(1)
+    assert(Evaluator.age(tomorrowAYearAgo) == 0)
+  }
 }
