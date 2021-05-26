@@ -63,7 +63,9 @@ class ParserSpec extends AnyFlatSpec with Tables {
     ("123String", false),
     ("$", true),
     ("_", true),
-    ("foo.bar", true)
+    ("foo.bar", true),
+    ("compound_int", true),
+    ("description-nl", true)
   )
 
   "Expression parser" should "parse variables" in {

@@ -75,7 +75,11 @@ object Parser {
 
   def constValue[_: P]: P[Constant] = (arithmeticValue | logicValue | stringValue) map Constant
 
-  def identifier[_: P]: P[String] = P((CharIn("A-Z", "a-z", "$", "_") ~ CharIn("A-Z", "a-z", "0-9", "$", "_").rep()).!)
+  def identifier[_: P]: P[String] = P((
+    CharIn("A-Z", "a-z", "$", "_") ~
+      CharIn("A-Z", "a-z", "0-9", "$", "_").rep() ~
+      ("-" ~ CharIn("a-z").rep(2)).? // -nl, -fr etc
+    ).!)
     .opaque("<identifier>")
 
   def variable[_: P]: P[Variable] = P("{" ~/ (identifier ~ ("." ~/ identifier).rep()).! ~ "}") map Variable
