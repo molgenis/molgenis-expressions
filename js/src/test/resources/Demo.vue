@@ -10,7 +10,8 @@
 </template>
 
 <script>
-  import {evaluate} from "../../../target/scala-2.13/molgenis-expressions-fastopt/main.mjs"
+  import {evaluate} from "../../../target/scala-2.13/molgenis-expressions-opt/main.mjs"
+  window.evaluate = evaluate
   export default {
     data () {
       return {
@@ -21,7 +22,8 @@
     computed: {
       result () {
         try {
-          return evaluate(this.expression, JSON.parse(this.data))
+          
+          return eval(`evaluate('${this.expression}',${this.data})`)
         }
         catch (error) {
           return error

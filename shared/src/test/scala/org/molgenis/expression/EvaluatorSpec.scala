@@ -5,10 +5,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.{TableFor2, Tables}
 
-import java.time.LocalDate
+import java.time.{LocalDate, ZoneOffset}
 
-//import java.time.temporal.ChronoUnit.YEARS
-//import java.time.{LocalDate, LocalDateTime, Period}
 import scala.util.Success
 
 class EvaluatorSpec extends AnyFlatSpec with Tables {
@@ -17,17 +15,10 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     "foo" -> "foo",
     "bar" -> 4.5,
     "ten" -> 10,
-    "dob" -> LocalDate.now().minusYears(1)
+    "dob" -> LocalDate.now(ZoneOffset.UTC).minusYears(1)
   )
 
-  //  def age(x: LocalDate): Long = Period.between(x, LocalDate.now.plusDays(1)).get(YEARS)
   val functions: Map[String, Seq[Any] => Any] = Map(
-    //    "today" -> (_ => LocalDate.now()),
-    //    "age" -> ((params: List[Any]) => params.head match {
-    //      case x: LocalDate => age(x)
-    //      case x: LocalDateTime => age(x.toLocalDate)
-    //      case x: String => age(LocalDate.parse(x))
-    //    }),
     "matches" -> ((params: Seq[Any]) => params match {
       case List(regex: String, value: String) => regex.r.matches(value)
     })
@@ -159,9 +150,6 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
 
   val functionExpressions: TableFor2[String, Any] = Table(
     ("expression", "value"),
-    //    ("today()", LocalDate.now()),
-    //    ("age({dob})", age(context("dob").asInstanceOf[LocalDate])),
-    //    ("age('2020-01-01')", age(LocalDate.of(2020, 1, 1))),
     ("matches('(ab)+', 'ababab')", true)
   )
   "function evaluation" should "call function from context" in {
