@@ -1,16 +1,18 @@
 package org.molgenis.expression
 
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
+import org.molgenis.expression.Evaluator.age
 import org.molgenis.expression.Parser.parseAll
 
+import java.time.{LocalDate, ZoneOffset}
 import java.util
-import scala.collection.mutable
 import scala.jdk.javaapi.CollectionConverters.{asJava, asScala}
 import scala.util.Try
 
 class Expressions(val maxCacheSize: Int = 1000) {
   private val expressionCache: LoadingCache[String, Try[Expression]] =
     Caffeine.newBuilder.maximumSize(maxCacheSize).build(this.load)
+
   private def load(expression: String): Try[Expression] = parseAll(expression)
 
   /**
@@ -29,9 +31,28 @@ class Expressions(val maxCacheSize: Int = 1000) {
   def parseAndEvaluate(expressions: util.List[String],
                        context: util.Map[String, Any]): util.List[Try[Any]] = {
     val scalaExpressions: List[String] = asScala(expressions).toList
-    val scalaContext: mutable.Map[String, Any] = asScala(context)
+    val scalaContext: Map[String, Any] = asScala(context).toMap
 
-    val evaluator: Evaluator.Evaluator = new Evaluator.Evaluator(scalaContext, Map.empty)
+    def ageConvert: List[Any] => Any = (p: List[Any]) => p.head match {
+      case l: LocalDate => age(l)
+      case s: String => age(LocalDate.parse(s))
+      case null => null
+    }
+
+    def today: List[Any] => LocalDate = _ => LocalDate.now(ZoneOffset.UTC)
+
+    def regex: List[Any] => Boolean = {
+      case List(_, null) => false
+      case List(a: String, b: String) => a.r.matches(b)
+    }
+
+    val functions = Map(
+      "age" -> ageConvert,
+      "today" -> today,
+      "regex" -> regex
+    )
+
+    val evaluator: Evaluator.Evaluator = new Evaluator.Evaluator(scalaContext, functions)
     val evaluated: List[Try[Any]] = scalaExpressions
       .map(expressionCache.get)
       .map(expression => expression.flatMap(evaluator.evaluate))

@@ -74,6 +74,8 @@ object Evaluator {
               case operator: ComparisonOperator => (leftValue, rightValue, operator) match {
                 case (l: Number, r: Number, Less) => Success(l.doubleValue() < r.doubleValue())
                 case (l: Number, r: Number, LessOrEqual) => Success(l.doubleValue() <= r.doubleValue())
+                case (l: Number, r: Number, GreaterOrEqual) => Success(l.doubleValue() >= r.doubleValue())
+                case (l: Number, r: Number, Greater) => Success(l.doubleValue() > r.doubleValue())
                 case (l: Any, r: Any, Equal) => Success(l == r)
                 case (l: Any, r: Any, NotEqual) => Success(l != r)
                 case (null, null, Equal) => Success(true)
@@ -82,8 +84,6 @@ object Evaluator {
                 case (null, null, NotEqual) => Success(false)
                 case (null, _, NotEqual) => Success(true)
                 case (_, null, NotEqual) => Success(true)
-                case (l: Number, r: Number, GreaterOrEqual) => Success(l.doubleValue() >= r.doubleValue())
-                case (l: Number, r: Number, Greater) => Success(l.doubleValue() > r.doubleValue())
                 case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue} and ${rightValue}"))
               }
               case operator: BooleanOperator => (leftValue, rightValue, operator) match {
@@ -97,13 +97,16 @@ object Evaluator {
       case UnaryOperation(op, operand) => evaluate(operand) match {
         case Failure(f) => Failure(f)
         case Success(value) => (op, value) match {
+          case (Negate, null) => Success(true)
           case (Negate, b: Boolean) => Success(!b)
           case (Empty, c: Iterable[Any]) => Success(c.isEmpty)
           case (Empty, s: String) => Success(s.isEmpty)
           case (Empty, null) => Success(true)
+          case (Empty, _) => Success(false)
           case (NotEmpty, c: Iterable[Any]) => Success(c.nonEmpty)
           case (NotEmpty, s: String) => Success(s.nonEmpty)
           case (NotEmpty, null) => Success(false)
+          case (NotEmpty, _) => Success(true)
           case _ => Failure(new IllegalArgumentException(s"Cannot ${op} ${value}"))
         }
       }

@@ -47,7 +47,7 @@ object Parser {
 
   def logicValue[_: P]: P[Boolean] = IgnoreCase("true").map(_ => true) | IgnoreCase("false").map(_ => false)
 
-  private def escapedChar[_: P]: P[String] = P("\\" ~~ CharIn("""'\"bfnrt""").!).map {
+  private def escapedChar[_: P]: P[String] = P("\\" ~~ CharIn("""'"\\bfnrt""").!).map {
     case "b" => "\b"
     case "f" => "\f"
     case "n" => "\n"
@@ -91,7 +91,7 @@ object Parser {
       IgnoreCase("notempty").map(_ => NotEmpty))
 
   def unaryOperation[_: P]: P[Expression] =
-    P((("!" | IgnoreCase("negate")) ~/ expression.map {
+    P((("!" | IgnoreCase("negate")) ~/ factor.map {
       UnaryOperation(Negate, _)
     }) |
       (atom ~ unFunction.?).map {

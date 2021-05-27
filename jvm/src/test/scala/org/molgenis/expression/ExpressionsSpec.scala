@@ -18,4 +18,10 @@ class ExpressionsSpec extends AnyFlatSpec {
     val javaContext = util.Map.of[String, Any]("foo", 2, "bar", 2f)
     assert(expressions.parseAndEvaluate(javaExpressions, javaContext) == util.List.of(Success(true)))
   }
+
+  "function 'regex'" should "test string" in {
+    val javaExpressions = util.List.of("""regex('^\\w+(,(ASC|DESC))?(;\\w+(,(ASC|DESC))?)*$','foo,ASC;bar,DESC')""")
+    val javaContext = util.Map.of[String, Any]()
+    assert(expressions.parseAndEvaluate(javaExpressions, javaContext) == util.List.of(Success(true)))
+  }
 }

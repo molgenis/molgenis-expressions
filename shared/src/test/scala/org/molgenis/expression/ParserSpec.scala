@@ -47,6 +47,7 @@ class ParserSpec extends AnyFlatSpec with Tables {
     ("\"a\\nb\"", "a\nb"),
     ("\"Hello \\\"World\"", "Hello \"World"),
     ("'Hello World'", "Hello World"),
+    ("'Hello \\\\World'", "Hello \\World"),
     ("\"\\ud83d\\ude00\"", "\uD83D\uDE00")
   )
   it should "parse string literals" in {
@@ -258,6 +259,11 @@ class ParserSpec extends AnyFlatSpec with Tables {
             expression.BinaryOperation(operator, Variable("foo"), expression.Array(List(Constant(1), Constant(2))))
         )
       })
+  }
+
+  it should "give unary operands higher precedence than binary operands" in {
+    assert(Parser.parseAll("!{foo} or {bar}").success.value ==
+      BinaryOperation(Or, UnaryOperation(Negate, Variable("foo")), Variable("bar")))
   }
 
   "Parse failures" should "be reported as failures containing a ParseError" in {

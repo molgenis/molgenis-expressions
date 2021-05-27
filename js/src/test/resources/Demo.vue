@@ -22,8 +22,7 @@
     computed: {
       result () {
         try {
-          
-          return eval(`evaluate('${this.expression}',${this.data})`)
+          return eval(`evaluate('${this.expression.replaceAll("'", "''")}',${this.data})`)
         }
         catch (error) {
           return error
