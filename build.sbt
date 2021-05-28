@@ -60,13 +60,13 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     },
     scmInfo := Some(ScmInfo(new URL("https://github.com/molgenis/molgenis-expressions"),
       "https://github.com/molgenis/molgenis-expressions.git"))
-  ).
-  jsSettings(
-    scalaJSLinkerConfig ~= {
-      _.withModuleKind(ModuleKind.ESModule)
-        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
-    },
   )
+//  .jsSettings(
+//    scalaJSLinkerConfig ~= {
+//      _.withModuleKind(ModuleKind.ESModule)
+//        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
+//    },
+//  )
 
 lazy val setVersionNpm = ReleaseStep(action = st => {
   val extracted = Project.extract(st)
