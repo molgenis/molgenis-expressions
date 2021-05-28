@@ -21,7 +21,8 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   val functions: Map[String, Seq[Any] => Any] = Map(
     "matches" -> ((params: Seq[Any]) => params match {
       case List(regex: String, value: String) => regex.r.matches(value)
-    })
+    }),
+    "throw" -> ((_: Seq[Any]) => throw new IllegalArgumentException(""))
   )
   val evaluator = new Evaluator.Evaluator(context, functions)
 
@@ -30,7 +31,7 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     assert(evaluator.evaluate(Variable("bar")).success.value == 4.5)
   }
 
-  it should "return null if not variable is not found" in {
+  it should "return null if variable is not found" in {
     assert(evaluator.evaluate(Variable("foobar")).success.value == null)
   }
 
@@ -92,6 +93,33 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
         Greater,
         Variable("bar"),
         Constant(4)))) == Success(true))
+  }
+
+  it should "evaluate Or eagerly" in {
+    assert(evaluator.evaluate(BinaryOperation(
+      Or,
+      BinaryOperation(
+        Greater,
+        Constant(2),
+        Constant(1)),
+      FunctionEvaluation("throw", List()))).success.value == true)
+  }
+
+  it should "fail if right argument of boolean operation is needed but fails" in {
+    assert(evaluator.evaluate(BinaryOperation(
+      Or,
+      Constant(false),
+      FunctionEvaluation("throw", List()))).isFailure)
+  }
+
+  it should "evaluate And eagerly" in {
+    assert(evaluator.evaluate(BinaryOperation(
+      And,
+      BinaryOperation(
+        Less,
+        Constant(2),
+        Constant(1)),
+      FunctionEvaluation("throw", List()))).success.value == false)
   }
 
   "get variables" should "return a set of variable names used" in {

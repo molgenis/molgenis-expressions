@@ -41,61 +41,65 @@ object Evaluator {
 
   class Evaluator(context: scala.collection.Map[String, Any],
                   functions: scala.collection.Map[String, List[Any] => Any]) {
-    def evaluate(expression: Expression): Try[Any] = expression match {
-      case Null => Success(null)
-      case Constant(x) => Success(x)
-      case Array(x: List[Expression]) => Try(x.map(evaluate).map(_.get))
-      case Variable(name) => Try(context.get(name).orNull)
-      case BinaryOperation(binaryOp, leftExpr, rightExpr) =>
-        val left = evaluate(leftExpr)
-        val right = evaluate(rightExpr)
-        (left, right) match {
-          case (f: Failure[_], _) => f
-          case (_, f: Failure[_]) => f
-          case _ =>
-            val leftValue = left.get
-            val rightValue = right.get
-            binaryOp match {
-              case op: SetOperator =>
-                (leftValue, rightValue) match {
-                  case (leftList: List[Any], rightList: List[Any]) =>
-                    Success(evaluateSetOp(leftList.toSet, rightList.toSet, op))
-                  case (leftElement, rightList: List[Any]) =>
-                    Success(evaluateSetOp(Set(leftElement), rightList.toSet, op))
-                  case (leftList: List[Any], rightElement) =>
-                    Success(evaluateSetOp(leftList.toSet, Set(rightElement), op))
-                  case (leftElement, rightElement) =>
-                    Success(evaluateSetOp(Set(leftElement), Set(rightElement), op))
-                }
+    private def handleBoolean(op: BooleanOperator, left: Any, right: Any): Try[Boolean] = (left, right, op) match {
+      case (b1: Boolean, b2: Boolean, Or) => Success(b1 | b2)
+      case (b1: Boolean, b2: Boolean, And) => Success(b1 & b2)
+      case _ => Failure(new IllegalArgumentException(s"Cannot $op $left and $right"))
+    }
 
-              case operator: ArithmeticOperator => (leftValue, rightValue) match {
-                case (l: Number, r: Number) => arithmetic(operator, l.doubleValue(), r.doubleValue())
-                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue} and ${rightValue}"))
-              }
-              case operator: ComparisonOperator => (leftValue, rightValue, operator) match {
-                case (l: Number, r: Number, Less) => Success(l.doubleValue() < r.doubleValue())
-                case (l: Number, r: Number, LessOrEqual) => Success(l.doubleValue() <= r.doubleValue())
-                case (l: Number, r: Number, GreaterOrEqual) => Success(l.doubleValue() >= r.doubleValue())
-                case (l: Number, r: Number, Greater) => Success(l.doubleValue() > r.doubleValue())
-                case (l: Any, r: Any, Equal) => Success(l == r)
-                case (l: Any, r: Any, NotEqual) => Success(l != r)
-                case (null, null, Equal) => Success(true)
-                case (null, _, Equal) => Success(false)
-                case (_, null, Equal) => Success(false)
-                case (null, null, NotEqual) => Success(false)
-                case (null, _, NotEqual) => Success(true)
-                case (_, null, NotEqual) => Success(true)
-                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue} and ${rightValue}"))
-              }
-              case operator: BooleanOperator => (leftValue, rightValue, operator) match {
-                case (b1: Boolean, b2: Boolean, And) => Success(b1 && b2)
-                case (b1: Boolean, b2: Boolean, Or) => Success(b1 || b2)
-                case _ => Failure(new IllegalArgumentException(s"Cannot ${operator} ${leftValue} and ${rightValue}"))
-              }
-            }
+    private def handleSet(op: SetOperator, left: Any, right: Any) = (left, right) match {
+      case (leftList: List[Any], rightList: List[Any]) =>
+        Success(evaluateSetOp(leftList.toSet, rightList.toSet, op))
+      case (leftElement, rightList: List[Any]) =>
+        Success(evaluateSetOp(Set(leftElement), rightList.toSet, op))
+      case (leftList: List[Any], rightElement) =>
+        Success(evaluateSetOp(leftList.toSet, Set(rightElement), op))
+      case (leftElement, rightElement) =>
+        Success(evaluateSetOp(Set(leftElement), Set(rightElement), op))
+    }
 
-        }
-      case UnaryOperation(op, operand) => evaluate(operand) match {
+    private def handleArithmetic(op: ArithmeticOperator, left: Any, right: Any): Try[Double] = (left, right) match {
+      case (l: Number, r: Number) => arithmetic(op, l.doubleValue(), r.doubleValue())
+      case _ => Failure(new IllegalArgumentException(s"Cannot $op $left and $right"))
+    }
+
+    private def handleComparison(op: ComparisonOperator, left: Any, right: Any) = (left, right, op) match {
+      case (l: Number, r: Number, Less) => Success(l.doubleValue() < r.doubleValue())
+      case (l: Number, r: Number, LessOrEqual) => Success(l.doubleValue() <= r.doubleValue())
+      case (l: Number, r: Number, GreaterOrEqual) => Success(l.doubleValue() >= r.doubleValue())
+      case (l: Number, r: Number, Greater) => Success(l.doubleValue() > r.doubleValue())
+      case (l: Any, r: Any, Equal) => Success(l == r)
+      case (l: Any, r: Any, NotEqual) => Success(l != r)
+      case (null, null, Equal) => Success(true)
+      case (null, _, Equal) => Success(false)
+      case (_, null, Equal) => Success(false)
+      case (null, null, NotEqual) => Success(false)
+      case (null, _, NotEqual) => Success(true)
+      case (_, null, NotEqual) => Success(true)
+      case _ => Failure(new IllegalArgumentException(s"Cannot $op $left and $right"))
+    }
+
+    private def handleBinary(op: BinaryOperator, leftExpr: Expression, rightExpr: Expression): Try[Any] = {
+      val left = evaluate(leftExpr)
+      if (left.isFailure) return left
+      (left.get, op) match {
+        // Eager evaluation
+        case (false, And) => Success(false)
+        case (true, Or) => Success(true)
+        case _ =>
+          val right = evaluate(rightExpr)
+          if (right.isFailure) return right
+          op match {
+            case op: BooleanOperator => handleBoolean(op, left.get, right.get)
+            case op: SetOperator => handleSet(op, left.get, right.get)
+            case op: ArithmeticOperator => handleArithmetic(op, left.get, right.get)
+            case op: ComparisonOperator => handleComparison(op, left.get, right.get)
+          }
+      }
+    }
+
+    private def handleUnary(op: UnaryOperator, operand: Expression) = {
+      evaluate(operand) match {
         case Failure(f) => Failure(f)
         case Success(value) => (op, value) match {
           case (Negate, null) => Success(true)
@@ -108,11 +112,19 @@ object Evaluator {
           case (NotEmpty, s: String) => Success(s.nonEmpty)
           case (NotEmpty, null) => Success(false)
           case (NotEmpty, _) => Success(true)
-          case _ => Failure(new IllegalArgumentException(s"Cannot ${op} ${value}"))
+          case _ => Failure(new IllegalArgumentException(s"Cannot $op $value"))
         }
       }
-      case FunctionEvaluation(name, args) =>
-        Try(functions(name).apply(args.map(evaluate).map(_.get)))
+    }
+
+    def evaluate(expression: Expression): Try[Any] = expression match {
+      case Null => Success(null)
+      case Constant(x) => Success(x)
+      case Array(x: List[Expression]) => Try(x.map(evaluate).map(_.get))
+      case Variable(name) => Try(context.get(name).orNull)
+      case BinaryOperation(binaryOp, leftExpr, rightExpr) => handleBinary(binaryOp, leftExpr, rightExpr)
+      case UnaryOperation(op, operand) => handleUnary(op, operand)
+      case FunctionEvaluation(name, args) => Try(functions(name).apply(args.map(evaluate).map(_.get)))
     }
   }
 }
