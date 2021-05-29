@@ -1,7 +1,5 @@
 package org.molgenis.expression
 
-import java.time.{LocalDate, ZoneOffset}
-import scala.Double.NaN
 import scala.language.implicitConversions
 import scala.util.{Failure, Success, Try}
 
