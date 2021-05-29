@@ -61,7 +61,7 @@ The boolean operators convert their operands to booleans based on their
 ## JavaScript
 [![npm](https://img.shields.io/npm/v/@molgenis/expressions)](https://www.npmjs.com/package/@molgenis/expressions)
 
-Check the [demo](https://htmlpreview.github.io/?https://raw.githubusercontent.com/molgenis/molgenis-expressions/master/demo.html).
+Check the [demo](http://jsbin.com/losutosazu).
 
 The library is quite large (currently 334kB, 88kB zipped), because some of the Scala SDK gets
 included. The library is therefore published as a single script file that writes an `Expressions` object to the global
