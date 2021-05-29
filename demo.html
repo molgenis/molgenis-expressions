@@ -1,0 +1,60 @@
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<!--  <script src="https://unpkg.com/@molgenis/expressions"></script>-->
+  <script src="js/target/scala-2.13/molgenis-expressions-opt.js"></script>
+</head>
+<body>
+<div id="app">
+  <h1>Evaluate demo</h1>
+  <form>
+    <h2>Expression</h2>
+    <input type="text" v-model="expression"/><br/>
+    <h2>Variables</h2>
+    <ul>
+      <li v-for="variable in variables"
+          :key="variable">
+        <pre>{{variable}}</pre>
+      </li>
+    </ul>
+    <h2>Data</h2>
+    <textarea v-model="data" rows="4"></textarea>
+  </form>
+  <h2>Result</h2>
+  <pre> {{ result }} </pre>
+</div>
+<script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      expression: '{foo} > 12',
+      data: '{\n  "foo": 15\n}'
+    },
+    computed: {
+      result: function () {
+        try {
+          return Expressions.evaluate(this.expression, this.dataEval)
+        } catch (error) {
+          return error
+        }
+      },
+      dataEval: function () {
+        try {
+          return eval(`(${this.data})`)
+        } catch (error) {
+          return {}
+        }
+      },
+      variables: function () {
+        try {
+          return Expressions.variableNames(this.expression)
+        } catch (error) {
+          return []
+        }
+      }
+    }
+  })
+</script>
+</body>
+</html>
+
