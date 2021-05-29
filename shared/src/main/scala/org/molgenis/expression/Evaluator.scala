@@ -1,6 +1,7 @@
 package org.molgenis.expression
 
 import java.time.{LocalDate, ZoneOffset}
+import scala.Double.NaN
 import scala.language.implicitConversions
 import scala.util.{Failure, Success, Try}
 
@@ -43,13 +44,12 @@ object Evaluator {
 
   class Evaluator(context: scala.collection.Map[String, Any],
                   functions: scala.collection.Map[String, List[Any] => Any]) {
-    private def handleBoolean(op: BooleanOperator, left: Any, right: Any): Try[Boolean] = (left, right, op) match {
-      case (b1: Boolean, b2: Boolean, Or) => Success(b1 | b2)
-      case (b1: Boolean, b2: Boolean, And) => Success(b1 & b2)
-      case _ => Failure(new IllegalArgumentException(s"Cannot $op $left and $right"))
+    private def handleBoolean(op: BooleanOperator, left: Boolean, right: Boolean): Success[Boolean] = op match {
+      case Or => Success(left | right)
+      case And => Success(left & right)
     }
 
-    private def handleSet(op: SetOperator, left: Any, right: Any) = (left, right) match {
+    private def handleSet(op: SetOperator, left: Any, right: Any): Success[Boolean] = (left, right) match {
       case (leftList: List[Any], rightList: List[Any]) =>
         Success(evaluateSetOp(leftList.toSet, rightList.toSet, op))
       case (leftElement, rightList: List[Any]) =>
@@ -81,18 +81,27 @@ object Evaluator {
       case _ => Failure(new IllegalArgumentException(s"Cannot $op $left and $right"))
     }
 
+    def isTruthy(x: Any): Boolean = x match {
+      case false => false
+      case 0.0 => false
+      case null => false
+      case s: String => s.nonEmpty
+      case d:Double => !d.isNaN
+      case _ => true
+    }
+
     private def handleBinary(op: BinaryOperator, leftExpr: Expression, rightExpr: Expression): Try[Any] = {
-      val left = evaluate(leftExpr)
+      val left = evaluate(leftExpr).map(isTruthy)
       if (left.isFailure) return left
       (left.get, op) match {
         // Eager evaluation
-        case (false, And) => Success(false)
-        case (true, Or) => Success(true)
+        case (x, And) if !isTruthy(x) => Success(false)
+        case (x, Or) if isTruthy(x) => Success(true)
         case _ =>
           val right = evaluate(rightExpr)
           if (right.isFailure) return right
           op match {
-            case op: BooleanOperator => handleBoolean(op, left.get, right.get)
+            case op: BooleanOperator => handleBoolean(op, isTruthy(left.get), isTruthy(right.get))
             case op: SetOperator => handleSet(op, left.get, right.get)
             case op: ArithmeticOperator => handleArithmetic(op, left.get, right.get)
             case op: ComparisonOperator => handleComparison(op, left.get, right.get)

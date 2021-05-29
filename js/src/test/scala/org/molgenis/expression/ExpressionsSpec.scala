@@ -33,11 +33,15 @@ class ExpressionsSpec extends AnyFlatSpec {
     val dob = threeYearsAgo.toISOString.substring(0, 10)
     assert(Expressions.ageConvert(List(dob)) == 3)
   }
-  
+
   "create context" should "filter out undefined" in {
     assert(Expressions.createContext(js.Dictionary("x" -> js.undefined)).isEmpty)
   }
   it should "filter out null" in {
     assert(Expressions.createContext(js.Dictionary("x" -> null)).isEmpty)
+  }
+  it should "map js array to scala list" in {
+    assert(Expressions.createContext(js.Dictionary("array" -> js.Array()))
+      === Map("array" -> List()))
   }
 }

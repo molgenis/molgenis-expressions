@@ -3,8 +3,9 @@ package org.molgenis.expression
 import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import org.scalatest.prop.{TableFor2, Tables}
+import org.scalatest.prop.{TableFor1, TableFor2, Tables}
 
+import scala.Double.{NegativeInfinity, PositiveInfinity}
 import scala.util.Success
 
 class EvaluatorSpec extends AnyFlatSpec with Tables {
@@ -240,5 +241,19 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     val parsed = parsedExpression.success.value
     val evaluated = evaluator.evaluate(parsed)
     assert(evaluated.success.value === false)
+  }
+
+  "isTruthy" should "be false for falsey values" in {
+    val falsey: TableFor1[Any] = Table("value", false, 0, 0.0, -0, -0.0f, "", Double.NaN)
+    forAll(falsey)(x => {
+      assert(evaluator.isTruthy(x) === false)
+    })
+  }
+
+  it should "be true for truthy values" in {
+    val truthy: TableFor1[Any] = Table("value", true, 1, 2.18, "Hello", PositiveInfinity, NegativeInfinity)
+    forAll(truthy)(x => {
+      assert(evaluator.isTruthy(x))
+    })
   }
 }
