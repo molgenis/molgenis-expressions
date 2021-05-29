@@ -18,8 +18,9 @@
 </template>
 
 <script>
-  import {evaluate, variableNames} from "../../../target/scala-2.13/molgenis-expressions-opt/main.mjs"
-  window.evaluate = evaluate
+  import "../../../target/scala-2.13/molgenis-expressions-opt/main.js"
+  /* global Expressions */
+
   export default {
     data () {
       return {
@@ -30,7 +31,7 @@
     computed: {
       result () {
         try {
-          return eval(`evaluate('${this.expression.replaceAll("'", "''")}',${this.data})`)
+          return eval(`Expressions.evaluate('${this.expression.replaceAll("'", "''")}',${this.data})`)
         }
         catch (error) {
           return error
@@ -38,7 +39,7 @@
       },
       variables () {
         try {
-          return variableNames(this.expression)
+          return Expressions.variableNames(this.expression)
         }
         catch (error) {
           return []
