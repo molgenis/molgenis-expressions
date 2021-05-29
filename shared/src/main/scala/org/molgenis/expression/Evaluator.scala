@@ -89,7 +89,7 @@ object Evaluator {
     }
 
     private def handleBinary(op: BinaryOperator, leftExpr: Expression, rightExpr: Expression): Try[Any] = {
-      val left = evaluate(leftExpr).map(isTruthy)
+      val left = evaluate(leftExpr)
       if (left.isFailure) return left
       (left.get, op) match {
         // Eager evaluation
