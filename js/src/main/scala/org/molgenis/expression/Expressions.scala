@@ -4,9 +4,9 @@ import org.molgenis.expression.Evaluator.regex
 
 import scala.collection.mutable
 import scala.scalajs.js
+import scala.scalajs.js.Dictionary
 import scala.scalajs.js.JSConverters._
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import scala.scalajs.js.Dictionary
 import scala.util.{Failure, Success, Try}
 
 @JSExportTopLevel("Expressions")
@@ -20,13 +20,16 @@ object Expressions {
       result - 1
     else result
   }
+
   def today(params: List[Any]) = new js.Date()
+
   def ageConvert(p: List[Any]): Any = p.head match {
     case s: String => age(new js.Date(s))
     case d: js.Date => age(d)
     case x if js.isUndefined(x) => null
     case null => null
   }
+
   @JSExport
   val functions: mutable.Map[String, List[Any] => Any] = mutable.Map(
     "today" -> today,
@@ -46,10 +49,17 @@ object Expressions {
     }
   }
 
+  def mapValue(v: js.Any): Any = v match {
+    case a: js.Array[_] => a.toList
+    case x if js.isUndefined(x) => null
+    case _ => v
+  }
+
   def createContext(context: Dictionary[js.Any]): Map[String, Any] =
-    context.toMap
-      .filter({ case (_, value) => !js.isUndefined(value) })
+    context.view
+      .mapValues(mapValue)
       .filter({ case (_, value) => value != null })
+      .toMap
 
   @JSExport
   def variableNames(expression: String): js.Array[String] = {
