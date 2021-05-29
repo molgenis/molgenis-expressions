@@ -5,8 +5,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.{TableFor2, Tables}
 
-import java.time.{LocalDate, ZoneOffset}
-
 import scala.util.Success
 
 class EvaluatorSpec extends AnyFlatSpec with Tables {
@@ -14,8 +12,7 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   val context: Map[String, Any] = Map(
     "foo" -> "foo",
     "bar" -> 4.5,
-    "ten" -> 10,
-    "dob" -> LocalDate.now(ZoneOffset.UTC).minusYears(1)
+    "ten" -> 10
   )
 
   val functions: Map[String, Seq[Any] => Any] = Map(
@@ -243,15 +240,5 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     val parsed = parsedExpression.success.value
     val evaluated = evaluator.evaluate(parsed)
     assert(evaluated.success.value === false)
-  }
-
-  "age" should "be one if your first birthday is today" in {
-    val todayAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1)
-    assert(Evaluator.age(todayAYearAgo) == 1)
-  }
-
-  it should "be zero if your birthday is tomorrow" in {
-    val tomorrowAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1).plusDays(1)
-    assert(Evaluator.age(tomorrowAYearAgo) == 0)
   }
 }

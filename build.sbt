@@ -24,7 +24,6 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     defaultBump := None,
     libraryDependencies += "com.lihaoyi" %%% "fastparse" % "2.3.2",
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
-    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.2.2",
     sonarProperties ++= Map(
       "sonar.host.url" -> "https://sonarcloud.io",
       "sonar.organization" -> "molgenis",

@@ -5,8 +5,10 @@ import scala.language.implicitConversions
 import scala.util.{Failure, Success, Try}
 
 object Evaluator {
-  def age: LocalDate => Int = (d: LocalDate) => d.until(LocalDate.now(ZoneOffset.UTC)).getYears
-  def today: List[Any] => LocalDate = _ => LocalDate.now()
+  def regex: List[Any] => Boolean = {
+    case List(_, null) => false
+    case List(a: String, b: String) => a.r.matches(b)
+  }
 
   def arithmetic(operator: ArithmeticOperator, a: Double, b: Double): Try[Double] = {
     operator match {

@@ -1,7 +1,7 @@
 package org.molgenis.expression
 
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
-import org.molgenis.expression.Evaluator.age
+import org.molgenis.expression.Evaluator.regex
 import org.molgenis.expression.Parser.parseAll
 
 import java.time.{LocalDate, ZoneOffset}
@@ -14,6 +14,9 @@ class Expressions(val maxCacheSize: Int = 1000) {
     Caffeine.newBuilder.maximumSize(maxCacheSize).build(this.load)
 
   private def load(expression: String): Try[Expression] = parseAll(expression)
+
+  def age: LocalDate => Int = (d: LocalDate) => d.until(LocalDate.now(ZoneOffset.UTC)).getYears
+  def today: List[Any] => LocalDate = _ => LocalDate.now()
 
   /**
    * Get all variable names used in expressions. Skips expressions that it cannot parse.
@@ -37,13 +40,6 @@ class Expressions(val maxCacheSize: Int = 1000) {
       case l: LocalDate => age(l)
       case s: String => age(LocalDate.parse(s))
       case null => null
-    }
-
-    def today: List[Any] => LocalDate = _ => LocalDate.now(ZoneOffset.UTC)
-
-    def regex: List[Any] => Boolean = {
-      case List(_, null) => false
-      case List(a: String, b: String) => a.r.matches(b)
     }
 
     val functions = Map(
