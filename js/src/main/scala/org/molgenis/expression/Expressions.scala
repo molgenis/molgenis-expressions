@@ -34,7 +34,9 @@ object Expressions {
   }
 
   def createContext(context: Dictionary[js.Any]): Map[String, Any] =
-    context.toMap.filter({ case (_, value) => !js.isUndefined(value) })
+    context.toMap
+      .filter({ case (_, value) => !js.isUndefined(value) })
+      .filter({ case (_, value) => value != null })
 
   @JSExport
   def variableNames(expression: String): js.Array[String] = {
