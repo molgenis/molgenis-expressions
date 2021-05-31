@@ -57,6 +57,14 @@ The boolean operators convert their operands to booleans based on their
 * `null`/`undefined`
 * `NaN`
 
+## functions
+The following functions are available
+
+|function|definition|
+|--------|-------|
+| `today()`  | Returns today's date |
+| `age(dob)` | Returns the age given a date of birth. The dob parameter may be a date or an yyyy-mm-dd ISO date string |
+| `regex(expression, string)` | Tests a string against a regular expression, returns true if it matches. |
 
 ## JavaScript
 [![npm](https://img.shields.io/npm/v/@molgenis/expressions)](https://www.npmjs.com/package/@molgenis/expressions)
