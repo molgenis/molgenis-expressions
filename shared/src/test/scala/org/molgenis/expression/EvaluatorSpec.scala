@@ -174,7 +174,7 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
 
   val functionExpressions: TableFor2[String, Any] = Table(
     ("expression", "value"),
-    ("matches('(ab)+', 'ababab')", true)
+    ("regex('(ab)+', 'ababab')", true)
   )
   "function evaluation" should "call function from context" in {
     forAll(functionExpressions)((expression, expected) => {
