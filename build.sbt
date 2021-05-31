@@ -1,9 +1,9 @@
 import autoversion.Keys.{bugfixRegexes, defaultBump, minorRegexes}
-import org.scalajs.linker.interface.OutputPatterns
 import sbt.Keys.{libraryDependencies, name, publishMavenStyle, publishTo}
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtsonar.SonarPlugin.autoImport.sonarProperties
-import sys.process._
-import ReleaseTransformations._
+
+import scala.sys.process._
 
 ThisBuild / scalaVersion := "2.13.5"
 ThisBuild / versionScheme := Some("early-semver")
@@ -59,6 +59,13 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     },
     scmInfo := Some(ScmInfo(new URL("https://github.com/molgenis/molgenis-expressions"),
       "https://github.com/molgenis/molgenis-expressions.git"))
+  )
+  .jsSettings(
+    scalaJSLinkerConfig ~= {
+      _.withESFeatures {
+        _.withUseECMAScript2015(false)
+      }
+    }
   )
 
 lazy val setVersionNpm = ReleaseStep(action = st => {
