@@ -8,7 +8,7 @@ Works both in JavaScript and in the JVM.
 Some examples:
 * `{age} >= 18 and !{driverslicense}`
 * `{reason} anyof ['No', 'Unsure']`
-* `regex('^[1-9][0-9]{3}[\s]?[A-Za-z]{2}$', {zipcode})`
+* `regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$', {zipcode})`
 
 ## operators
 

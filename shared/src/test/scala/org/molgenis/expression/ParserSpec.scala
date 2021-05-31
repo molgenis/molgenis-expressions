@@ -109,7 +109,9 @@ class ParserSpec extends AnyFlatSpec with Tables {
   val functionCalls: TableFor2[String, FunctionEvaluation] = Table(
     ("string", "function evaluation"),
     ("foo({bar})", FunctionEvaluation("foo", List(Variable("bar")))),
-    ("foo({bar}, 'baz')", FunctionEvaluation("foo", List(Variable("bar"), Constant("baz"))))
+    ("foo({bar}, 'baz')", FunctionEvaluation("foo", List(Variable("bar"), Constant("baz")))),
+    ("regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$', {zipcode})", FunctionEvaluation("regex",
+      List(Constant("^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$"), Variable("zipcode"))))
   )
   it should "parse function calls" in {
     forAll(arrays)((string, expected) => {

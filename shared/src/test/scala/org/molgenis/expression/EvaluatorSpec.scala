@@ -16,10 +16,8 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     "ten" -> 10
   )
 
-  val functions: Map[String, Seq[Any] => Any] = Map(
-    "matches" -> ((params: Seq[Any]) => params match {
-      case List(regex: String, value: String) => regex.r.matches(value)
-    }),
+  val functions: Map[String, List[Any] => Any] = Map(
+    "regex" -> Evaluator.regex,
     "throw" -> ((_: Seq[Any]) => throw new IllegalArgumentException(""))
   )
   val evaluator = new Evaluator.Evaluator(context, functions)
@@ -255,5 +253,10 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     forAll(truthy)(x => {
       assert(evaluator.isTruthy(x))
     })
+  }
+
+  "regex" should "evaluate regular expression" in {
+    assert(evaluator.evaluate(FunctionEvaluation("regex",
+      List(Constant("^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$"), Constant("6226 BC")))).success.value === true)
   }
 }
