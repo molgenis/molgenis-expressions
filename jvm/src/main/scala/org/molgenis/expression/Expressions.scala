@@ -7,7 +7,7 @@ import org.molgenis.expression.Parser.parseAll
 import java.time.{LocalDate, ZoneOffset}
 import java.util
 import scala.jdk.javaapi.CollectionConverters.{asJava, asScala}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class Expressions(val maxCacheSize: Int = 1000) {
   private val expressionCache: LoadingCache[String, Try[Expression]] =
@@ -24,13 +24,32 @@ class Expressions(val maxCacheSize: Int = 1000) {
    * @param expressions List of expression Strings
    * @return Set of variable names
    */
-  def getVariableNames(expressions: util.List[String]): util.Set[String] = {
+  def getAllVariableNames(expressions: util.List[String]): util.Set[String] = {
     val parsed = asScala(expressionCache.getAll(expressions))
     val variables = parsed.values.filter(_.isSuccess).map(_.get).toSet
       .flatMap(org.molgenis.expression.Evaluator.getVariables)
     asJava(variables)
   }
 
+  /**
+   * Try to get all variable names used in an expression.
+   * @param expression the expression to get variable names from
+   * @return Set of variable names
+   * @throws exception if the parsing fails
+   */
+  def getVariableNames(expression: String): util.Set[String] =
+    expressionCache.get(expression)
+      .map(org.molgenis.expression.Evaluator.getVariables) match {
+      case Success(result) => asJava(result)
+      case Failure(exception) => throw exception
+    }
+
+  /**
+   * Evaluates a list of expressions within a context
+   * @param expressions the expressions to parse and evaluate
+   * @param context the context in which to evaluate the expressions
+   * @return List<Try> containing the results of the parsing and evaluating
+   */
   def parseAndEvaluate(expressions: util.List[String],
                        context: util.Map[String, Any]): util.List[Try[Any]] = {
     val scalaExpressions: List[String] = asScala(expressions).toList

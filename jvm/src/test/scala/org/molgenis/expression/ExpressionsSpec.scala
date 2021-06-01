@@ -1,16 +1,20 @@
-package org.molgenis.expression;
+package org.molgenis.expression
 
+;
+
+import org.molgenis.expression.Parser.ParseException
+import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.time.{LocalDate, ZoneOffset}
 import java.util
-import scala.util.Success
+import scala.util.{Success, Try}
 
 class ExpressionsSpec extends AnyFlatSpec {
   val expressions: Expressions = new Expressions(1000)
 
   "Get Variable Names" should "work with java collections" in {
-    assert(expressions.getVariableNames(util.List.of("{foo} = {bar}", "{a} + {b}")) ==
+    assert(expressions.getAllVariableNames(util.List.of("{foo} = {bar}", "{a} + {b}")) ==
       util.Set.of("foo", "bar", "a", "b"))
   }
 
@@ -34,5 +38,14 @@ class ExpressionsSpec extends AnyFlatSpec {
   it should "be zero if your birthday is tomorrow" in {
     val tomorrowAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1).plusDays(1)
     assert(expressions.age(tomorrowAYearAgo) == 0)
+  }
+
+  "tryGetVariableNames" should "throw an exception if it fails to parse the expression" in {
+    assert(Try(expressions.getVariableNames("{foo")).failure.exception == ParseException("Expected \"}\":1:5, found \"\"", 4))
+  }
+
+  "tryGetVariableNames" should "return variable names" in {
+    assert(Try(expressions.getVariableNames("{foo} = {bar}")).success.value ==
+      util.Set.of("foo", "bar"))
   }
 }
