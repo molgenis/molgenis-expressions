@@ -155,11 +155,11 @@ object Parser {
 
   def expressionEnd[_: P]: P[Expression] = P(expression ~ End)
 
-  case class ParseError(msg: String, index: Int) extends Exception(msg)
+  case class ParseException(msg: String, index: Int) extends Exception(msg)
 
   def parseAll(in: String): Try[Expression] = parse(in, expressionEnd(_)) match {
     case Parsed.Success(expression, _) => scala.util.Success(expression)
     case f: Parsed.Failure =>
-      scala.util.Failure(ParseError(f.trace().msg, f.index))
+      scala.util.Failure(ParseException(f.trace().msg, f.index))
   }
 }

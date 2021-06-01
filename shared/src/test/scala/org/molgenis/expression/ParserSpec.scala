@@ -2,7 +2,7 @@ package org.molgenis.expression
 
 import fastparse._
 import org.molgenis.expression
-import org.molgenis.expression.Parser.ParseError
+import org.molgenis.expression.Parser.ParseException
 import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.{forAll, whenever}
@@ -271,6 +271,6 @@ class ParserSpec extends AnyFlatSpec with Tables {
   "Parse failures" should "be reported as failures containing a ParseError" in {
     val exception = Parser.parseAll("{foo").failure.exception
     assert(exception.getMessage == "Expected \"}\":1:5, found \"\"")
-    assert(exception.asInstanceOf[ParseError].index == 4)
+    assert(exception.asInstanceOf[ParseException].index == 4)
   }
 }
