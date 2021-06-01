@@ -38,51 +38,50 @@ object Parser {
   })
 
   def decimalNumber[_: P]: P[Number] =
-    ("-".? ~ ((digit.rep(1) ~ "." ~ digit.rep()) | (digit.rep() ~ "." ~ digit.rep(1)))).!
+    P(("-".? ~ ((digit.rep(1) ~ "." ~ digit.rep()) | (digit.rep() ~ "." ~ digit.rep(1)))).!
       .opaque("<decimal number>").map {
       _.toDouble
-    }
+    })
 
   def arithmeticValue[_: P]: P[Number] = P(decimalNumber | wholeNumber)
 
-  def logicValue[_: P]: P[Boolean] = IgnoreCase("true").map(_ => true) | IgnoreCase("false").map(_ => false)
+  def logicValue[_: P]: P[Boolean] = P(IgnoreCase("true").map(_ => true) | IgnoreCase("false").map(_ => false))
 
-  private def escapedChar[_: P]: P[String] = P("\\" ~~ CharIn("""'"\\bfnrt""").!).map {
+  private def escapedChar[_: P]: P[String] = P(("\\" ~~ CharIn("""'"\\bfnrt""").!).map {
     case "b" => "\b"
     case "f" => "\f"
     case "n" => "\n"
     case "r" => "\r"
     case "t" => "\t"
     case x => x
-  }
+  })
 
   private def hexDigit[_: P] = P(CharIn("0-9", "a-f", "A-F"))
 
-  private def unicodeEscape[_: P]: P[String] = P("\\u" ~~/ hexDigit.repX(4, max = 4).!)
+  private def unicodeEscape[_: P]: P[String] = P(("\\u" ~~/ hexDigit.repX(4, max = 4).!)
     .opaque("<unicode escape sequence>").map {
     Integer.parseInt(_, 16).toChar.toString
-  }
+  })
 
-  private def singleQuoteStringLiteral[_: P]: P[String] = P("'" ~~/ (
+  private def singleQuoteStringLiteral[_: P]: P[String] = P(("'" ~~/ (
     escapedChar | unicodeEscape | CharPred(c => c != '\'' && c != '\\' && isPrintableChar(c)).!
-    ).repX() ~~ "'").map(_.mkString)
+    ).repX() ~~ "'").map(_.mkString))
 
-  private def doubleQuoteStringLiteral[_: P] = P("\"" ~~/ (
+  private def doubleQuoteStringLiteral[_: P] = P(("\"" ~~/ (
     escapedChar | unicodeEscape | CharPred(c => c != '"' && c != '\\' && isPrintableChar(c)).!
-    ).repX() ~~ "\"").map(_.mkString)
+    ).repX() ~~ "\"").map(_.mkString))
 
-  def stringValue[_: P]: P[String] = singleQuoteStringLiteral | doubleQuoteStringLiteral
+  def stringValue[_: P]: P[String] = P(singleQuoteStringLiteral | doubleQuoteStringLiteral)
 
-  def constValue[_: P]: P[Constant] = (arithmeticValue | logicValue | stringValue) map Constant
+  def constValue[_: P]: P[Constant] = P((arithmeticValue | logicValue | stringValue) map Constant)
 
   def identifier[_: P]: P[String] = P((
     CharIn("A-Z", "a-z", "$", "_") ~
       CharIn("A-Z", "a-z", "0-9", "$", "_").rep() ~
       ("-" ~ CharIn("a-z").rep(2)).? // -nl, -fr etc
-    ).!)
-    .opaque("<identifier>")
+    ).!.opaque("<identifier>"))
 
-  def variable[_: P]: P[Variable] = P("{" ~/ (identifier ~ ("." ~/ identifier).rep()).! ~ "}") map Variable
+  def variable[_: P]: P[Variable] = P(("{" ~/ (identifier ~ ("." ~/ identifier).rep()).! ~ "}") map Variable)
 
   def atom[_: P]: P[Expression] = P(nullValue | variable | constValue | array)
 
@@ -128,7 +127,7 @@ object Parser {
       ("||" | IgnoreCase("or")).map(_ => Or)
   )
 
-  def expression[_: P]: P[Expression] = (factor ~ (binFunctions ~/ factor).rep()).map({
+  def expression[_: P]: P[Expression] = P((factor ~ (binFunctions ~/ factor).rep()).map({
     case (pre, fs) =>
       // Use precedence climbing algorithm to shape the operator tree
       var remaining = fs
@@ -152,7 +151,7 @@ object Parser {
       }
 
       climb(0, pre)
-  })
+  }))
 
   def expressionEnd[_: P]: P[Expression] = P(expression ~ End)
 
