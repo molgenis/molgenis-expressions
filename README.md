@@ -69,7 +69,7 @@ The following functions are available
 ## JavaScript
 [![npm](https://img.shields.io/npm/v/@molgenis/expressions)](https://www.npmjs.com/package/@molgenis/expressions)
 
-Check the [demo](http://jsbin.com/kotimux).
+Check the [demo](https://codepen.io/fdlk/full/GRWQjOB).
 
 The library is quite large (currently 334kB, 88kB zipped), because some of the Scala SDK gets
 included. The library is therefore published as a single script file that writes an `Expressions` object to the global
