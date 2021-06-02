@@ -61,11 +61,7 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
       "https://github.com/molgenis/molgenis-expressions.git"))
   )
   .jsSettings(
-    scalaJSLinkerConfig ~= {
-      _.withESFeatures {
-        _.withUseECMAScript2015(false)
-      }
-    }
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
   )
 
 lazy val setVersionNpm = ReleaseStep(action = st => {
