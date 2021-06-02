@@ -72,15 +72,14 @@ The following functions are available
 Check the [demo](https://codepen.io/fdlk/full/GRWQjOB).
 
 The library is quite large (currently 334kB, 88kB zipped), because some of the Scala SDK gets
-included. The library is therefore published as a single script file that writes an `Expressions` object to the global
-namespace.
-You can include it in a script tag, for example using unpkg.com: 
+included.
+It can be added using npm:
 ```
-<script src="https://unpkg.com/@molgenis/expressions"></script>`
+npm add @molgenis/expressions
 ```
-Or a specific version (check the banner to see what's the latest)
-```
-<script src="https://unpkg.com/@molgenis/expressions@0.14.2"></script>`
+In your code, import the module:
+```javascript
+import { Expressions } from '@molgenis/expressions'
 ```
 To evaluate an expression:
 ```javascript
@@ -94,18 +93,6 @@ To parse and get a list of variable names:
 // returns ['foo']
 Expressions.variableNames("{foo}")
 ```
-### Webpack / ES6
-To use the library from a webpack bundle, you can load it separately and register the `Expressions` 
-object as an [external](https://webpack.js.org/configuration/externals/):
-```json
-{
-  "externals": {
-    "molgenis-expressions": ["https://unpkg.com/@molgenis/expressions", "Expressions"]
-  }
-}
-```
-In your code, you can add comment `/* global Expressions */` to specify that the Expressions object
-can be found in the global context.
 ## Java
 [![Sonatype Nexus (Repository)](https://img.shields.io/nexus/maven-releases/org.molgenis/molgenis-expressions_2.13?server=https%3A%2F%2Fregistry.molgenis.org)](https://registry.molgenis.org/#browse/browse:maven-releases:org%2Fmolgenis%2Fmolgenis-expressions_2.13)
 
@@ -148,19 +135,27 @@ The parameter is the number of parsed expressions that it should cache.
 The library depends on Caffeine for the cache.
 
 ```java
-val expressions = new Expressions(1000);
+val evaluator = new Expressions(1000);
+val expressions = List.of("{foo} > {bar}", "{foo} + {bar}");
 ```
 Optionally, retrieve the variable names for a list of expressions, so that
 you know what variables to put in the context.
 ```java
-val expressions = List.of("{foo} > {bar}", "{foo} + {bar}")
-// returns List<String> containing ["foo", "bar"]
-expressions.getVariableNames()
+// returns Set<String> containing ["foo", "bar"]
+evaluator.getAllVariableNames(expressions);
+```
+
+Optionally, check a single expression to see if it can be parsed
+```java
+// throws ParseException
+evaluator.getVariableNames("{foo");
+// throws Set<String> containing ["foo", "bar]
+evaluator.getVariableNames("{foo} > {bar}");
 ```
 
 Parse and evaluate one or more expressions in a context:
 ```java
-val context = Map.of("foo", 3, "bar", 2)
+val context = Map.of("foo", 3, "bar", 2);
 // returns List<Object> containing [true, 5.0]
-evaluator.parseAndEvaluate(expressions, context)
+evaluator.parseAndEvaluate(expressions, context);
 ```
