@@ -1,5 +1,4 @@
 import autoversion.Keys.{bugfixRegexes, defaultBump, minorRegexes}
-import org.scalajs.linker.interface.OutputPatterns
 import sbt.Keys.{libraryDependencies, name, publishMavenStyle, publishTo}
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtsonar.SonarPlugin.autoImport.sonarProperties
@@ -62,10 +61,7 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
       "https://github.com/molgenis/molgenis-expressions.git"))
   )
   .jsSettings(
-    scalaJSLinkerConfig ~= {
-      _.withModuleKind(ModuleKind.ESModule)
-        .withOutputPatterns(OutputPatterns.fromJSFile("%s.mjs"))
-    }
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) }
   )
 
 lazy val setVersionNpm = ReleaseStep(action = st => {
