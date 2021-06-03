@@ -1,5 +1,6 @@
 package org.molgenis.expression
 
+import org.molgenis.expression.Evaluator.isTruthy
 import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
@@ -244,14 +245,14 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   "isTruthy" should "be false for falsey values" in {
     val falsey: TableFor1[Any] = Table("value", false, 0, 0.0, -0, -0.0f, "", Double.NaN)
     forAll(falsey)(x => {
-      assert(evaluator.isTruthy(x) === false)
+      assert(isTruthy(x) === false)
     })
   }
 
   it should "be true for truthy values" in {
     val truthy: TableFor1[Any] = Table("value", true, 1, 2.18, "Hello", PositiveInfinity, NegativeInfinity)
     forAll(truthy)(x => {
-      assert(evaluator.isTruthy(x))
+      assert(isTruthy(x))
     })
   }
 

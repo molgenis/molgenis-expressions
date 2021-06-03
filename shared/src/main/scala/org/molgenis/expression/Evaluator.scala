@@ -9,6 +9,15 @@ object Evaluator {
     case List(a: String, b: String) => a.r.matches(b)
   }
 
+  def isTruthy(x: Any): Boolean = x match {
+    case false => false
+    case 0.0 => false
+    case null => false
+    case s: String => s.nonEmpty
+    case d:Double => !d.isNaN
+    case _ => true
+  }
+
   def arithmetic(operator: ArithmeticOperator, a: Double, b: Double): Try[Double] = {
     operator match {
       case Power => Try(scala.math.pow(a, b))
@@ -77,15 +86,6 @@ object Evaluator {
       case (null, _, NotEqual) => Success(true)
       case (_, null, NotEqual) => Success(true)
       case _ => Failure(new IllegalArgumentException(s"Cannot $op $left and $right"))
-    }
-
-    def isTruthy(x: Any): Boolean = x match {
-      case false => false
-      case 0.0 => false
-      case null => false
-      case s: String => s.nonEmpty
-      case d:Double => !d.isNaN
-      case _ => true
     }
 
     private def handleBinary(op: BinaryOperator, leftExpr: Expression, rightExpr: Expression): Try[Any] = {
