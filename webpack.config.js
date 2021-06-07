@@ -8,6 +8,7 @@ module.exports = {
   },
   output: {
     library: {
+      name: 'Expressions',
       type: 'umd'
     }
   }

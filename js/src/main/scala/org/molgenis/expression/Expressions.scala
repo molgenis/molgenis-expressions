@@ -6,10 +6,9 @@ import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.Dictionary
 import scala.scalajs.js.JSConverters._
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import scala.scalajs.js.annotation.JSExportTopLevel
 import scala.util.{Failure, Success, Try}
 
-@JSExportTopLevel("Expressions")
 object Expressions {
   // https://stackoverflow.com/a/7091965/1973271
   def age(birthDate: js.Date): Int = {
@@ -30,14 +29,14 @@ object Expressions {
     case null => null
   }
 
-  @JSExport
+  @JSExportTopLevel("functions")
   val functions: mutable.Map[String, List[Any] => Any] = mutable.Map(
     "today" -> today,
     "age" -> ageConvert,
     "regex" -> regex
   )
 
-  @JSExport
+  @JSExportTopLevel("evaluate")
   def evaluate(expression: String,
                context: js.Dictionary[js.Any]): Any = {
     val parsedExpression = Parser.parseAll(expression)
@@ -61,7 +60,7 @@ object Expressions {
       .filter({ case (_, value) => value != null })
       .toMap
 
-  @JSExport
+  @JSExportTopLevel("variableNames")
   def variableNames(expression: String): js.Array[String] = {
     val result = Parser.parseAll(expression).map(Evaluator.getVariables)
     result match {
