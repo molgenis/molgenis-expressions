@@ -44,6 +44,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
     case b: java.lang.Boolean => Boolean2boolean(b)
     case l: util.Collection[Any] => asScala(l).toList.map(mapValue)
     case m: util.Map[String, Any] => map2Map(m)
+    case _ => v
   }
 
   /**

@@ -53,4 +53,9 @@ class ExpressionsSpec extends AnyFlatSpec {
     assert(expressions.parseAndEvaluate(util.List.of("{foo} empty", "{foo} notempty"),
       util.Map.of("foo", util.List.of())) == util.List.of(Success(true), Success(false)))
   }
+
+  it should "Work for java Strings" in {
+    assert(expressions.parseAndEvaluate(util.List.of("{foo} empty", "{foo} notempty"),
+      util.Map.of("foo", new java.lang.String(""))) == util.List.of(Success(true), Success(false)))
+  }
 }
