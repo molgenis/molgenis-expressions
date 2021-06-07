@@ -48,4 +48,9 @@ class ExpressionsSpec extends AnyFlatSpec {
     assert(Try(expressions.getVariableNames("{foo} = {bar}")).success.value ==
       util.Set.of("foo", "bar"))
   }
+
+  "empty" should "Work for java collections" in {
+    assert(expressions.parseAndEvaluate(util.List.of("{foo} empty", "{foo} notempty"),
+      util.Map.of("foo", util.List.of())) == util.List.of(Success(true), Success(false)))
+  }
 }

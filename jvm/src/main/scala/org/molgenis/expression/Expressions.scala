@@ -31,6 +31,21 @@ class Expressions(val maxCacheSize: Int = 1000) {
     asJava(variables)
   }
 
+  def map2Map(m:util.Map[String, Any]): Map[String, Any] = asScala(m).view.mapValues(mapValue).toMap
+
+  def mapValue(v: Any): Any = v match {
+    case b: java.lang.Byte => Byte2byte(b)
+    case s: java.lang.Short => Short2short(s)
+    case c: java.lang.Character => Character2char(c)
+    case i: java.lang.Integer => Integer2int(i)
+    case l: java.lang.Long => Long2long(l)
+    case f: java.lang.Float => Float2float(f)
+    case d: java.lang.Double => Double2double(d)
+    case b: java.lang.Boolean => Boolean2boolean(b)
+    case l: util.Collection[Any] => asScala(l).toList.map(mapValue)
+    case m: util.Map[String, Any] => map2Map(m)
+  }
+
   /**
    * Try to get all variable names used in an expression.
    * @param expression the expression to get variable names from
@@ -53,7 +68,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
   def parseAndEvaluate(expressions: util.List[String],
                        context: util.Map[String, Any]): util.List[Try[Any]] = {
     val scalaExpressions: List[String] = asScala(expressions).toList
-    val scalaContext: Map[String, Any] = asScala(context).toMap
+    val scalaContext: Map[String, Any] = map2Map(context)
 
     def ageConvert: List[Any] => Any = (p: List[Any]) => p.head match {
       case l: LocalDate => age(l)
