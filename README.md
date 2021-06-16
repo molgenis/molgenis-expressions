@@ -16,7 +16,7 @@ In decreasing order of precedence, the operators are:
 ### unary operators
 |operator|meaning|
 |--------|-------|
-| `not` / `!` | Boolean negation `!a` is `false` if a is [truthy](#truthy) |
+| `negate` / `!` | Boolean negation `!a` is `false` if a is [truthy](#truthy) |
 |`empty`      | `a empty` if `a` is `[]`, `""` or `null`/`undefined`       |
 |`notempty`   | `a notempty` if `a` is not `[]`, `""` or `null`/`undefined`|
 
