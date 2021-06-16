@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@molgenis/expressions)](https://www.npmjs.com/package/@molgenis/expressions)
 
 Library for evaluation of simple expressions given a context of variables.
+Compatible with the expression language used in [Survey JS](https://github.com/surveyjs/survey-library/tree/master/src/expressions).
 Works both in JavaScript and in the JVM.
 
 Some examples:
