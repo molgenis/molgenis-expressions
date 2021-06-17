@@ -1,6 +1,6 @@
 {
   "name": "@molgenis/expressions",
-  "version": "0.17.4",
+  "version": "0.18.0",
   "description": "Expression language for MOLGENIS",
   "main": "dist/main.js",
   "files": [
