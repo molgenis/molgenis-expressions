@@ -83,13 +83,13 @@ pipeline {
                 stage('Build, Test, Push to Registries [ master ]') {
                     steps {
                         container('maven') {
-                            sh "./sbtx coverage test coverageReport fullOptJS"
-                            fetch_codecov()
-                            sh "./codecov -c -K -C ${GIT_COMMIT}"
                             sh "./sbtx expressions/sonarScan"
                             sh "./sbtx 'project expressions' 'release with-defaults'"
                             sh "npm install"
                             sh "npm publish"
+                            sh "./sbtx clean coverage test coverageReport"
+                            fetch_codecov()
+                            sh "./codecov -c -K -C ${GIT_COMMIT}"
                         }
                     }
                     post {
