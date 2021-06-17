@@ -5,3 +5,4 @@ project/target
 node_modules/
 .idea/sonarlint/
 dist/
+codecov
