@@ -229,7 +229,7 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   }
 
   "isTruthy" should "be false for falsey values" in {
-    val falsey: TableFor1[Any] = Table("value", false, 0, 0.0, -0, -0.0f, "", Double.NaN)
+    val falsey: TableFor1[Any] = Table("value", false, 0, 0.0, -0, -0.0f, "", Double.NaN, null)
     forAll(falsey)(x => {
       assert(isTruthy(x) === false)
     })

@@ -3,7 +3,7 @@ package org.molgenis.expression
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
 import org.molgenis.expression.Parser.parseAll
 
-import java.time.{LocalDate, ZoneOffset}
+import java.time.{Instant, LocalDate}
 import java.util
 import java.util.regex.Pattern
 import java.util.regex.Pattern.{CASE_INSENSITIVE, DOTALL, MULTILINE}
@@ -15,9 +15,9 @@ class Expressions(val maxCacheSize: Int = 1000) {
     Caffeine.newBuilder.maximumSize(maxCacheSize).build(this.load)
 
   private def load(expression: String): Try[Expression] = parseAll(expression)
-  def today: List[Any] => LocalDate = _ => LocalDate.now(ZoneOffset.UTC)
+  private def today: List[Any] => String = _ => LocalDate.now().toString
 
-  def regex: List[Any] => Boolean = {
+  private def regex: List[Any] => Boolean = {
     case List(_, null) => false
     case List(a: String, b: String) => Pattern.compile(a).matcher(b).matches
     case List(a: String, b: String, flags: String) =>
@@ -30,18 +30,20 @@ class Expressions(val maxCacheSize: Int = 1000) {
       Pattern.compile(a, flag).matcher(b).matches
   }
 
-  def convertDate(value: Any): Option[LocalDate] = value match {
+  private def toLocalDate(value: Any): Option[LocalDate] = value match {
     case l: LocalDate => Some(l)
     case s: String => Some(LocalDate.parse(s))
     case _ => None
   }
 
-  val age: List[Any] => Any = (p: List[Any]) => p.map(convertDate) match {
+  private val ageConvert: List[Any] => Any = (p: List[Any]) => p.map(toLocalDate) match {
     case Nil => null
     case Some(dob) :: Some(date) :: _ => dob.until(date).getYears
-    case Some(dob) :: _ => dob.until(LocalDate.now(ZoneOffset.UTC)).getYears
+    case Some(dob) :: _ => dob.until(LocalDate.now()).getYears
     case None :: _ => null
   }
+
+  private val currentYear: List[Any] => Int = (p: List[Any]) => LocalDate.now().getYear
 
   /**
    * Get all variable names used in expressions. Skips expressions that it cannot parse.
@@ -69,6 +71,8 @@ class Expressions(val maxCacheSize: Int = 1000) {
     case b: java.lang.Boolean => Boolean2boolean(b)
     case l: util.Collection[Any] => asScala(l).toList.map(mapValue)
     case m: util.Map[String, Any] => map2Map(m)
+    case ld: LocalDate => ld.toString
+    case dt: Instant => dt.toString
     case _ => v
   }
 
@@ -99,8 +103,9 @@ class Expressions(val maxCacheSize: Int = 1000) {
     val scalaContext: Map[String, Any] = map2Map(context)
 
     val functions = Map(
-      "age" -> age,
       "today" -> today,
+      "currentYear" -> currentYear,
+      "age" -> ageConvert,
       "regex" -> regex
     )
 

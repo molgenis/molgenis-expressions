@@ -1,6 +1,5 @@
 package org.molgenis.expression
 
-import java.time.{LocalDate, ZoneOffset}
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
@@ -20,17 +19,16 @@ object Expressions {
 
   def today(params: List[Any]) = new js.Date()
 
-  def regex(params: List[Any]) = params match {
+  def regex(params: List[Any]): Boolean = params match {
     case List(_, null) => false
     case List(a: String, b: String) => RegExp(a).test(b)
-    case List(a: String, b: String, flags: String) => {
+    case List(a: String, b: String, flags: String) =>
       val invalidFlag = "([^ims])".r
       flags match {
         case invalidFlag(x) => throw new IllegalArgumentException(s"Unknown regex flag: $x")
         case _ =>
       }
       RegExp(a, flags).test(b)
-    }
   }
 
   def convertDate(p: Any): Option[js.Date] = p match {
@@ -47,9 +45,12 @@ object Expressions {
     case None :: _ => null
   }
 
+  val currentYear: List[Any] => Int = (p: List[Any]) => today(p).getFullYear().toInt
+
   @JSExportTopLevel("functions")
   val functions: mutable.Map[String, List[Any] => Any] = mutable.Map(
     "today" -> today,
+    "currentYear" -> currentYear,
     "age" -> ageConvert,
     "regex" -> regex
   )
@@ -69,6 +70,7 @@ object Expressions {
   def mapValue(v: js.Any): Any = v match {
     case a: js.Array[_] => a.toList
     case x if js.isUndefined(x) => null
+    case d: js.Date => d.toISOString()
     case _ => v
   }
 

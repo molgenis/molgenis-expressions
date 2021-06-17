@@ -65,4 +65,12 @@ class ExpressionsSpec extends AnyFlatSpec {
     assert(Try(Expressions.evaluate("""regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'q')""",
       Dictionary())).failure.exception.getMessage == "Unknown regex flag: q")
   }
+
+  "currentYear" should "return the current year" in {
+    assert(Expressions.evaluate("currentYear()", Dictionary()) === new js.Date().getUTCFullYear())
+  }
+
+  "evaluate" should "compare dates" in {
+    assert(Expressions.evaluate("{date} >= '2010-08-13'", Dictionary("date" -> new js.Date("2010-08-14"))) == true)
+  }
 }

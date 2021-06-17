@@ -7,9 +7,9 @@ Compatible with the expression language used in [Survey JS](https://github.com/s
 Works both in JavaScript and in the JVM.
 
 Some examples:
-* `{age} >= 18 and !{driverslicense}`
+* `age({dateOfBirth}) >= 18 and !{driverslicense}`
 * `{reason} anyof ['No', 'Unsure']`
-* `regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$', {zipcode})`
+* `regex('^[1-9][0-9]{3}[\\s]?[A-Z]{2}$', {zipcode}, 'i')`
 
 ## operators
 
@@ -62,11 +62,14 @@ The boolean operators convert their operands to booleans based on their
 The following functions are available
 
 ### today
-`today()` returns today's date
+`today()` returns today's date, in the local timezone, in the form 'yyyy-mm-dd'
+
+### currentYear
+`currentYear()` returns the year of today's date, in the local timezone, as an integer number
 
 ### age
 `age(dob, date)` returns the age given date of birth dob on a given date.
-The parameters may be a date or an yyyy-mm-dd ISO date string.
+The parameters must be an yyyy-mm-dd ISO date string.
 
 ### regex
 `regex(expression, string, flags)` tests a string against a regular expression,

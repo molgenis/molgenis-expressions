@@ -67,11 +67,15 @@ object Evaluator {
       case _ => Failure(new IllegalArgumentException(s"Cannot $op $left and $right"))
     }
 
-    private def handleComparison(op: ComparisonOperator, left: Any, right: Any) = (left, right, op) match {
+    private def handleComparison(op: ComparisonOperator, left: Any, right: Any): Try[Boolean] = (left, right, op) match {
       case (l: Number, r: Number, Less) => Success(l.doubleValue() < r.doubleValue())
       case (l: Number, r: Number, LessOrEqual) => Success(l.doubleValue() <= r.doubleValue())
       case (l: Number, r: Number, GreaterOrEqual) => Success(l.doubleValue() >= r.doubleValue())
       case (l: Number, r: Number, Greater) => Success(l.doubleValue() > r.doubleValue())
+      case (l: String, r: String, Less) => Success(l < r)
+      case (l: String, r: String, LessOrEqual) => Success(l <= r)
+      case (l: String, r: String, GreaterOrEqual) => Success(l >= r)
+      case (l: String, r: String, Greater) => Success(l > r)
       case (l: Any, r: Any, Equal) => Success(l == r)
       case (l: Any, r: Any, NotEqual) => Success(l != r)
       case (null, null, Equal) => Success(true)

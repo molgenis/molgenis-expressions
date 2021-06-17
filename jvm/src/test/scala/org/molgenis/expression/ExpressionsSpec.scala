@@ -1,4 +1,4 @@
-package org.molgenis.expression;
+package org.molgenis.expression
 
 import org.molgenis.expression.Parser.ParseException
 import org.scalatest.TryValues._
@@ -30,12 +30,20 @@ class ExpressionsSpec extends AnyFlatSpec {
 
   "age" should "be one if your first birthday is today" in {
     val todayAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1)
-    assert(expressions.age(List(todayAYearAgo)) == 1)
+
+    assert(expressions.parseAndEvaluate(util.List.of("age({dob})"),
+      util.Map.of("dob", todayAYearAgo)).get(0).success.value == 1)
   }
 
   it should "be zero if your birthday is tomorrow" in {
     val tomorrowAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1).plusDays(1)
-    assert(expressions.age(List(tomorrowAYearAgo)) == 0)
+    assert(expressions.parseAndEvaluate(util.List.of("age({dob})"),
+      util.Map.of("dob", tomorrowAYearAgo)).get(0).success.value == 0)
+  }
+
+  "currentYear" should "return the current year" in {
+    assert(expressions.parseAndEvaluate(util.List.of("currentYear()"),
+      util.Map.of()).get(0).success.value == LocalDate.now(ZoneOffset.UTC).getYear)
   }
 
   "regex" should "evaluate regular expression" in {
@@ -76,5 +84,10 @@ class ExpressionsSpec extends AnyFlatSpec {
   it should "Work for java Strings" in {
     assert(expressions.parseAndEvaluate(util.List.of("{foo} empty", "{foo} notempty"),
       util.Map.of("foo", new java.lang.String(""))) == util.List.of(Success(true), Success(false)))
+  }
+
+  "evaluate" should "compare dates" in {
+    assert(expressions.parseAndEvaluate(util.List.of("{date} >= '2010-08-13'", "{date} < '2010-08-15'"),
+      util.Map.of("date", LocalDate.parse("2010-08-14"))) == util.List.of(Success(true), Success(true)))
   }
 }
