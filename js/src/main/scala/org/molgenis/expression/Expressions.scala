@@ -1,12 +1,10 @@
 package org.molgenis.expression
 
-import org.molgenis.expression.Evaluator.regex
-
 import scala.collection.mutable
 import scala.scalajs.js
-import scala.scalajs.js.Dictionary
 import scala.scalajs.js.JSConverters._
 import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.scalajs.js.{Dictionary, RegExp}
 import scala.util.{Failure, Success, Try}
 
 object Expressions {
@@ -21,6 +19,19 @@ object Expressions {
   }
 
   def today(params: List[Any]) = new js.Date()
+
+  def regex(params: List[Any]) = params match {
+    case List(_, null) => false
+    case List(a: String, b: String) => RegExp(a).test(b)
+    case List(a: String, b: String, flags: String) => {
+      val invalidFlag = "([^ims])".r
+      flags match {
+        case invalidFlag(x) => throw new IllegalArgumentException(s"Unknown regex flag: $x")
+        case _ =>
+      }
+      RegExp(a, flags).test(b)
+    }
+  }
 
   def ageConvert(p: List[Any]): Any = p.head match {
     case s: String => age(new js.Date(s))

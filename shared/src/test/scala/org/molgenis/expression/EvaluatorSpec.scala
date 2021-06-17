@@ -18,7 +18,6 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   )
 
   val functions: Map[String, List[Any] => Any] = Map(
-    "regex" -> Evaluator.regex,
     "throw" -> ((_: Seq[Any]) => throw new IllegalArgumentException(""))
   )
   val evaluator = new Evaluator.Evaluator(context, functions)
@@ -173,19 +172,6 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     })
   }
 
-  val functionExpressions: TableFor2[String, Any] = Table(
-    ("expression", "value"),
-    ("regex('(ab)+', 'ababab')", true)
-  )
-  "function evaluation" should "call function from context" in {
-    forAll(functionExpressions)((expression, expected) => {
-      val parsedExpression = Parser.parseAll(expression)
-      val parsed = parsedExpression.success.value
-      val evaluated = evaluator.evaluate(parsed)
-      assert(evaluated.success.value === expected)
-    })
-  }
-
   "null" should "equal null" in {
     val parsedExpression = Parser.parseAll("null = null")
     val parsed = parsedExpression.success.value
@@ -254,10 +240,5 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     forAll(truthy)(x => {
       assert(isTruthy(x))
     })
-  }
-
-  "regex" should "evaluate regular expression" in {
-    assert(evaluator.evaluate(FunctionEvaluation("regex",
-      List(Constant("^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$"), Constant("6226 BC")))).success.value === true)
   }
 }

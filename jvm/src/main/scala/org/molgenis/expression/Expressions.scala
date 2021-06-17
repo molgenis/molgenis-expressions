@@ -1,11 +1,12 @@
 package org.molgenis.expression
 
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
-import org.molgenis.expression.Evaluator.regex
 import org.molgenis.expression.Parser.parseAll
 
 import java.time.{LocalDate, ZoneOffset}
 import java.util
+import java.util.regex.Pattern
+import java.util.regex.Pattern.{CASE_INSENSITIVE, DOTALL, MULTILINE}
 import scala.jdk.javaapi.CollectionConverters.{asJava, asScala}
 import scala.util.{Failure, Success, Try}
 
@@ -16,7 +17,22 @@ class Expressions(val maxCacheSize: Int = 1000) {
   private def load(expression: String): Try[Expression] = parseAll(expression)
 
   def age: LocalDate => Int = (d: LocalDate) => d.until(LocalDate.now(ZoneOffset.UTC)).getYears
+
   def today: List[Any] => LocalDate = _ => LocalDate.now()
+
+  def regex: List[Any] => Boolean = {
+    case List(_, null) => false
+    case List(a: String, b: String) => Pattern.compile(a).matcher(b).matches
+    case List(a: String, b: String, flags: String) => {
+      val flag: Int = flags.toList.foldLeft(0)((flags, flagChar) => flagChar match {
+        case 'i' => flags | CASE_INSENSITIVE
+        case 'm' => flags | MULTILINE
+        case 's' => flags | DOTALL
+        case x => throw new IllegalArgumentException(s"Unknown regex flag: $x")
+      })
+      Pattern.compile(a, flag).matcher(b).matches
+    }
+  }
 
   /**
    * Get all variable names used in expressions. Skips expressions that it cannot parse.
@@ -31,7 +47,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
     asJava(variables)
   }
 
-  def map2Map(m:util.Map[String, Any]): Map[String, Any] = asScala(m).view.mapValues(mapValue).toMap
+  def map2Map(m: util.Map[String, Any]): Map[String, Any] = asScala(m).view.mapValues(mapValue).toMap
 
   def mapValue(v: Any): Any = v match {
     case b: java.lang.Byte => Byte2byte(b)
@@ -49,6 +65,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
 
   /**
    * Try to get all variable names used in an expression.
+   *
    * @param expression the expression to get variable names from
    * @return Set of variable names
    * @throws exception if the parsing fails
@@ -62,8 +79,9 @@ class Expressions(val maxCacheSize: Int = 1000) {
 
   /**
    * Evaluates a list of expressions within a context
+   *
    * @param expressions the expressions to parse and evaluate
-   * @param context the context in which to evaluate the expressions
+   * @param context     the context in which to evaluate the expressions
    * @return List<Try> containing the results of the parsing and evaluating
    */
   def parseAndEvaluate(expressions: util.List[String],

@@ -4,6 +4,7 @@ import org.scalatest.TryValues.convertTryToSuccessOrFailure
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.scalajs.js
+import scala.scalajs.js.Dictionary
 import scala.util.Try
 
 class ExpressionsSpec extends AnyFlatSpec {
@@ -43,5 +44,20 @@ class ExpressionsSpec extends AnyFlatSpec {
   it should "map js array to scala list" in {
     assert(Expressions.createContext(js.Dictionary("array" -> js.Array()))
       === Map("array" -> List()))
+  }
+
+  "regex" should "evaluate regular expression" in {
+    assert(Expressions.evaluate("""regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$','6226 BC')""",
+      Dictionary()) === true)
+  }
+
+  it should "evaluate regular expression with flags" in {
+    assert(Expressions.evaluate("""regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'i')""",
+      Dictionary()) === true)
+  }
+
+  it should "fail when encountering unknown flags" in {
+    assert(Try(Expressions.evaluate("""regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'q')""",
+      Dictionary())).failure.exception.getMessage == "Unknown regex flag: q")
   }
 }

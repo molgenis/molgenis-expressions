@@ -61,11 +61,23 @@ The boolean operators convert their operands to booleans based on their
 ## functions
 The following functions are available
 
-|function|definition|
-|--------|-------|
-| `today()`  | Returns today's date |
-| `age(dob)` | Returns the age given a date of birth. The dob parameter may be a date or an yyyy-mm-dd ISO date string |
-| `regex(expression, string)` | Tests a string against a regular expression, returns true if it matches. |
+### today
+`today()` returns today's date
+
+### age
+`age(dob)` returns the age given date of birth dob.
+The parameter may be a date or an yyyy-mm-dd ISO date string.
+
+### regex
+`regex(expression, string, flags)` tests a string against a regular expression,
+returns true if it finds any matches.
+Flags is a string of characters. Available flags:
+
+| flag | meaning |
+|---|---------|
+| i | case insensitive |
+| m | multiline |
+| s | dotall |
 
 ## JavaScript
 [![npm](https://img.shields.io/npm/v/@molgenis/expressions)](https://www.npmjs.com/package/@molgenis/expressions)

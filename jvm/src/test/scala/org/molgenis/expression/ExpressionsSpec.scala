@@ -1,6 +1,4 @@
-package org.molgenis.expression
-
-;
+package org.molgenis.expression;
 
 import org.molgenis.expression.Parser.ParseException
 import org.scalatest.TryValues._
@@ -38,6 +36,27 @@ class ExpressionsSpec extends AnyFlatSpec {
   it should "be zero if your birthday is tomorrow" in {
     val tomorrowAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1).plusDays(1)
     assert(expressions.age(tomorrowAYearAgo) == 0)
+  }
+
+  "regex" should "evaluate regular expression" in {
+    assert(expressions.parseAndEvaluate(util.List.of(
+      """regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$','6226 BC')"""),
+      util.Map.of())
+      .get(0).success.value === true)
+  }
+
+  it should "evaluate regular expression with flags" in {
+    assert(expressions.parseAndEvaluate(util.List.of(
+      """regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'i')"""),
+      util.Map.of())
+      .get(0).success.value === true)
+  }
+
+  it should "fail when encountering unknown flags" in {
+    assert(expressions.parseAndEvaluate(util.List.of(
+      """regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'q')"""),
+      util.Map.of())
+      .get(0).failure.exception.getMessage == "Unknown regex flag: q")
   }
 
   "tryGetVariableNames" should "throw an exception if it fails to parse the expression" in {

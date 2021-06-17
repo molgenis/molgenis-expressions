@@ -4,11 +4,6 @@ import scala.language.implicitConversions
 import scala.util.{Failure, Success, Try}
 
 object Evaluator {
-  def regex: List[Any] => Boolean = {
-    case List(_, null) => false
-    case List(a: String, b: String) => a.r.matches(b)
-  }
-
   def isTruthy(x: Any): Boolean = x match {
     case false => false
     case 0.0 => false
