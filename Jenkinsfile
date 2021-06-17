@@ -27,6 +27,7 @@ pipeline {
                         env.GITHUB_TOKEN = sh(script: 'vault read -field=value secret/ops/token/github', returnStdout: true)
                         env.GITHUB_USER = sh(script: 'vault read -field=username secret/ops/token/github', returnStdout: true)
                         env.NPM_TOKEN = sh(script: 'vault read -field=value secret/ops/token/npm', returnStdout: true)
+                        env.CODECOV_TOKEN = sh(script: 'vault read -field=molgenis-expressions secret/ops/token/codecov', returnStdout: true)
                     }
                 }
                 container('maven') {
@@ -55,7 +56,9 @@ pipeline {
                 stage('Build, Test') {
                     steps {
                         container('maven') {
-                            sh "./sbtx test"
+                            sh "./sbtx coverage test coverageReport"
+                            fetch_codecov()
+                            sh "./codecov -c -K -C ${GIT_COMMIT}"
                             sh "./sbtx expressions/sonarScan"
                         }
                     }
@@ -80,7 +83,9 @@ pipeline {
                 stage('Build, Test, Push to Registries [ master ]') {
                     steps {
                         container('maven') {
-                            sh "./sbtx test fullOptJS"
+                            sh "./sbtx coverage test coverageReport fullOptJS"
+                            fetch_codecov()
+                            sh "./codecov -c -K -C ${GIT_COMMIT}"
                             sh "./sbtx expressions/sonarScan"
                             sh "./sbtx 'project expressions' 'release with-defaults'"
                             sh "npm install"
