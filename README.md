@@ -65,8 +65,8 @@ The following functions are available
 `today()` returns today's date
 
 ### age
-`age(dob)` returns the age given date of birth dob.
-The parameter may be a date or an yyyy-mm-dd ISO date string.
+`age(dob, date)` returns the age given date of birth dob on a given date.
+The parameters may be a date or an yyyy-mm-dd ISO date string.
 
 ### regex
 `regex(expression, string, flags)` tests a string against a regular expression,

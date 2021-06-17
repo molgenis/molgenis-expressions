@@ -30,12 +30,12 @@ class ExpressionsSpec extends AnyFlatSpec {
 
   "age" should "be one if your first birthday is today" in {
     val todayAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1)
-    assert(expressions.age(todayAYearAgo) == 1)
+    assert(expressions.age(List(todayAYearAgo)) == 1)
   }
 
   it should "be zero if your birthday is tomorrow" in {
     val tomorrowAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1).plusDays(1)
-    assert(expressions.age(tomorrowAYearAgo) == 0)
+    assert(expressions.age(List(tomorrowAYearAgo)) == 0)
   }
 
   "regex" should "evaluate regular expression" in {

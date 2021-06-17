@@ -15,15 +15,12 @@ class Expressions(val maxCacheSize: Int = 1000) {
     Caffeine.newBuilder.maximumSize(maxCacheSize).build(this.load)
 
   private def load(expression: String): Try[Expression] = parseAll(expression)
-
-  def age: LocalDate => Int = (d: LocalDate) => d.until(LocalDate.now(ZoneOffset.UTC)).getYears
-
-  def today: List[Any] => LocalDate = _ => LocalDate.now()
+  def today: List[Any] => LocalDate = _ => LocalDate.now(ZoneOffset.UTC)
 
   def regex: List[Any] => Boolean = {
     case List(_, null) => false
     case List(a: String, b: String) => Pattern.compile(a).matcher(b).matches
-    case List(a: String, b: String, flags: String) => {
+    case List(a: String, b: String, flags: String) =>
       val flag: Int = flags.toList.foldLeft(0)((flags, flagChar) => flagChar match {
         case 'i' => flags | CASE_INSENSITIVE
         case 'm' => flags | MULTILINE
@@ -31,7 +28,19 @@ class Expressions(val maxCacheSize: Int = 1000) {
         case x => throw new IllegalArgumentException(s"Unknown regex flag: $x")
       })
       Pattern.compile(a, flag).matcher(b).matches
-    }
+  }
+
+  def convertDate(value: Any): Option[LocalDate] = value match {
+    case l: LocalDate => Some(l)
+    case s: String => Some(LocalDate.parse(s))
+    case _ => None
+  }
+
+  val age: List[Any] => Any = (p: List[Any]) => p.map(convertDate) match {
+    case Nil => null
+    case Some(dob) :: Some(date) :: _ => dob.until(date).getYears
+    case Some(dob) :: _ => dob.until(LocalDate.now(ZoneOffset.UTC)).getYears
+    case None :: _ => null
   }
 
   /**
@@ -89,14 +98,8 @@ class Expressions(val maxCacheSize: Int = 1000) {
     val scalaExpressions: List[String] = asScala(expressions).toList
     val scalaContext: Map[String, Any] = map2Map(context)
 
-    def ageConvert: List[Any] => Any = (p: List[Any]) => p.head match {
-      case l: LocalDate => age(l)
-      case s: String => age(LocalDate.parse(s))
-      case null => null
-    }
-
     val functions = Map(
-      "age" -> ageConvert,
+      "age" -> age,
       "today" -> today,
       "regex" -> regex
     )

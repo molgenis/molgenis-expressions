@@ -1,5 +1,6 @@
 package org.molgenis.expression
 
+import java.time.{LocalDate, ZoneOffset}
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
@@ -9,11 +10,10 @@ import scala.util.{Failure, Success, Try}
 
 object Expressions {
   // https://stackoverflow.com/a/7091965/1973271
-  def age(birthDate: js.Date): Int = {
-    val today = new js.Date()
-    val result = today.getFullYear.toInt - birthDate.getFullYear.toInt
-    val m = today.getMonth.toInt - birthDate.getMonth.toInt
-    if (m < 0 || (m == 0 && today.getDate() < birthDate.getDate()))
+  def age(birthDate: js.Date, d: js.Date): Int = {
+    val result = d.getFullYear.toInt - birthDate.getFullYear.toInt
+    val m = d.getMonth.toInt - birthDate.getMonth.toInt
+    if (m < 0 || (m == 0 && d.getDate() < birthDate.getDate()))
       result - 1
     else result
   }
@@ -33,11 +33,18 @@ object Expressions {
     }
   }
 
-  def ageConvert(p: List[Any]): Any = p.head match {
-    case s: String => age(new js.Date(s))
-    case d: js.Date => age(d)
-    case x if js.isUndefined(x) => null
-    case null => null
+  def convertDate(p: Any): Option[js.Date] = p match {
+    case s: String => Some(new js.Date(s))
+    case d: js.Date => Some(d)
+    case x if js.isUndefined(x) => None
+    case null => None
+  }
+
+  val ageConvert: List[Any] => Any = (p: List[Any]) => p.map(convertDate) match {
+    case Nil => null
+    case Some(dob) :: Some(date) :: _ => age(dob, date)
+    case Some(dob) :: _ => age(dob, today(Nil))
+    case None :: _ => null
   }
 
   @JSExportTopLevel("functions")

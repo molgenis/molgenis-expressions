@@ -18,14 +18,14 @@ class ExpressionsSpec extends AnyFlatSpec {
   "age" should "be one if your first birthday is today" in {
     val todayAYearAgo: js.Date = new js.Date
     todayAYearAgo.setFullYear(todayAYearAgo.getFullYear - 1)
-    assert(Expressions.age(todayAYearAgo) == 1)
+    assert(Expressions.age(todayAYearAgo, new js.Date()) == 1)
   }
 
   it should "be zero if your birthday is tomorrow" in {
     val tomorrowAYearAgo: js.Date = new js.Date
     tomorrowAYearAgo.setFullYear(tomorrowAYearAgo.getFullYear - 1)
     tomorrowAYearAgo.setTime(tomorrowAYearAgo.getTime + 24 * 3600 * 1000)
-    assert(Expressions.age(tomorrowAYearAgo) == 0)
+    assert(Expressions.age(tomorrowAYearAgo, new js.Date()) == 0)
   }
 
   "ageConvert" should "compute age for yyyy-mm-dd string" in {
@@ -33,6 +33,11 @@ class ExpressionsSpec extends AnyFlatSpec {
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear - 3)
     val dob = threeYearsAgo.toISOString.substring(0, 10)
     assert(Expressions.ageConvert(List(dob)) == 3)
+  }
+
+  it should "compute age relative to given date" in {
+    assert(Expressions.ageConvert(List("2010-08-13", "2021-08-12")) == 10)
+    assert(Expressions.ageConvert(List("2010-08-13", "2021-08-13")) == 11)
   }
 
   "create context" should "filter out undefined" in {
