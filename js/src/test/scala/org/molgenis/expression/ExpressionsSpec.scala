@@ -73,4 +73,8 @@ class ExpressionsSpec extends AnyFlatSpec {
   "evaluate" should "compare dates" in {
     assert(Expressions.evaluate("{date} >= '2010-08-13'", Dictionary("date" -> new js.Date("2010-08-14"))) == true)
   }
+
+  "evaluate" should "compare date with today()" in {
+    assert(Expressions.evaluate("'2010-08-13' <= today() ", Dictionary()) == true)
+  }
 }

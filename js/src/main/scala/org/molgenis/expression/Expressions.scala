@@ -17,7 +17,7 @@ object Expressions {
     else result
   }
 
-  def today(params: List[Any]) = new js.Date()
+  def today(params: List[Any]) = new js.Date().toISOString()
 
   def regex(params: List[Any]): Boolean = params match {
     case List(_, null) => false
@@ -41,11 +41,11 @@ object Expressions {
   val ageConvert: List[Any] => Any = (p: List[Any]) => p.map(convertDate) match {
     case Nil => null
     case Some(dob) :: Some(date) :: _ => age(dob, date)
-    case Some(dob) :: _ => age(dob, today(Nil))
+    case Some(dob) :: _ => age(dob, new js.Date())
     case None :: _ => null
   }
 
-  val currentYear: List[Any] => Int = (p: List[Any]) => today(p).getFullYear().toInt
+  val currentYear: List[Any] => Int = (p: List[Any]) => new js.Date().getFullYear().toInt
 
   @JSExportTopLevel("functions")
   val functions: mutable.Map[String, List[Any] => Any] = mutable.Map(
