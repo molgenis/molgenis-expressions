@@ -15,6 +15,8 @@
     <orderEntry type="library" name="sbt: com.lihaoyi:fastparse_sjs1_2.13:2.3.2:jar" level="project" />
     <orderEntry type="library" name="sbt: com.lihaoyi:geny_sjs1_2.13:0.6.7:jar" level="project" />
     <orderEntry type="library" name="sbt: com.lihaoyi:sourcecode_sjs1_2.13:0.2.3:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.exoego:scalajs-test-helper-core_sjs1_2.13:0.2.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.exoego:scalajs-test-helper-scalatest_sjs1_2.13:0.2.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-js:scalajs-library_2.13:1.5.1:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="sbt: org.scala-js:scalajs-test-bridge_2.13:1.5.1:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="sbt: org.scala-js:scalajs-test-interface_2.13:1.5.1:jar" level="project" />

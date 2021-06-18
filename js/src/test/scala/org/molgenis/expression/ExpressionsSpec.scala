@@ -8,6 +8,8 @@ import scala.scalajs.js.Dictionary
 import scala.util.Try
 
 class ExpressionsSpec extends AnyFlatSpec {
+  import net.exoego.scalajs.scalatest.structural._
+
   "expression.evaluate" should "compute age" in {
     val threeYearsAgo: js.Date = new js.Date
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear - 3)
@@ -104,6 +106,21 @@ class ExpressionsSpec extends AnyFlatSpec {
   "evaluate" should "compare date with today()" in {
     assert(
       Expressions.evaluate("'2010-08-13' <= today() ", Dictionary()) == true
+    )
+  }
+
+  "variableNames" should "return a js array upon success" in {
+    assert(
+      Expressions.variableNames("{foo} > {bar}") === js.Array("foo", "bar")
+    )
+  }
+
+  it should "throw an exception upon failure" in {
+    assert(
+      Try(
+        Expressions.variableNames("{foo} >")
+      ).failure.exception.getMessage ==
+        "Expected (\"(\" | functionOperation | unaryOperation):1:8, found \"\""
     )
   }
 }

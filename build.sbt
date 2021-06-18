@@ -69,6 +69,7 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform)
     )
   )
   .jsSettings(
+    libraryDependencies += "net.exoego" %%% "scalajs-test-helper-scalatest" % "0.2.0" % Test,
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.CommonJSModule)
         .withESFeatures({
