@@ -154,8 +154,7 @@ object Evaluator {
         case Failure(f) => Failure(f)
         case Success(value) =>
           (op, value) match {
-            case (Negate, null)               => Success(true)
-            case (Negate, b: Boolean)         => Success(!b)
+            case (Negate, x)                  => Success(!isTruthy(x))
             case (Empty, c: Iterable[Any])    => Success(c.isEmpty)
             case (Empty, s: String)           => Success(s.isEmpty)
             case (Empty, null)                => Success(true)

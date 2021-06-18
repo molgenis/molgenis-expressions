@@ -231,7 +231,10 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
   val unaryExpressions: TableFor2[String, Boolean] = Table(
     ("expression", "value"),
     ("['a'] empty", false),
-    ("['a'] notempty", true)
+    ("['a'] notempty", true),
+    ("! null", true),
+    ("! 'foo'", false),
+    ("! false", true)
   )
 
   "unary expressions" should "be parsed and evaluated correctly" in {
