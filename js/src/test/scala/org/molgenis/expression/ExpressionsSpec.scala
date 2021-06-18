@@ -11,7 +11,8 @@ class ExpressionsSpec extends AnyFlatSpec {
   "expression.evaluate" should "compute age" in {
     val threeYearsAgo: js.Date = new js.Date
     threeYearsAgo.setFullYear(threeYearsAgo.getFullYear - 3)
-    val context = js.Dictionary("dob" -> threeYearsAgo.toString.asInstanceOf[js.Any])
+    val context =
+      js.Dictionary("dob" -> threeYearsAgo.toString.asInstanceOf[js.Any])
     assert(Try(Expressions.evaluate("age({dob})", context)).success.value == 3)
   }
 
@@ -41,40 +42,68 @@ class ExpressionsSpec extends AnyFlatSpec {
   }
 
   "create context" should "filter out undefined" in {
-    assert(Expressions.createContext(js.Dictionary("x" -> js.undefined)).isEmpty)
+    assert(
+      Expressions.createContext(js.Dictionary("x" -> js.undefined)).isEmpty
+    )
   }
   it should "filter out null" in {
     assert(Expressions.createContext(js.Dictionary("x" -> null)).isEmpty)
   }
   it should "map js array to scala list" in {
-    assert(Expressions.createContext(js.Dictionary("array" -> js.Array()))
-      === Map("array" -> List()))
+    assert(
+      Expressions.createContext(js.Dictionary("array" -> js.Array()))
+        === Map("array" -> List())
+    )
   }
 
   "regex" should "evaluate regular expression" in {
-    assert(Expressions.evaluate("""regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$','6226 BC')""",
-      Dictionary()) === true)
+    assert(
+      Expressions.evaluate(
+        """regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$','6226 BC')""",
+        Dictionary()
+      ) === true
+    )
   }
 
   it should "evaluate regular expression with flags" in {
-    assert(Expressions.evaluate("""regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'i')""",
-      Dictionary()) === true)
+    assert(
+      Expressions.evaluate(
+        """regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'i')""",
+        Dictionary()
+      ) === true
+    )
   }
 
   it should "fail when encountering unknown flags" in {
-    assert(Try(Expressions.evaluate("""regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'q')""",
-      Dictionary())).failure.exception.getMessage == "Unknown regex flag: q")
+    assert(
+      Try(
+        Expressions.evaluate(
+          """regex('^[1-9][0-9]{3}[\\s]?[a-z]{2}$','6226 BC', 'q')""",
+          Dictionary()
+        )
+      ).failure.exception.getMessage == "Unknown regex flag: q"
+    )
   }
 
   "currentYear" should "return the current year" in {
-    assert(Expressions.evaluate("currentYear()", Dictionary()) === new js.Date().getUTCFullYear())
+    assert(
+      Expressions.evaluate("currentYear()", Dictionary()) === new js.Date()
+        .getUTCFullYear()
+    )
   }
 
   "evaluate" should "compare dates" in {
-    assert(Expressions.evaluate("{date} >= '2010-08-13'", Dictionary("date" -> new js.Date("2010-08-14"))) == true)
+    assert(
+      Expressions.evaluate(
+        "{date} >= '2010-08-13'",
+        Dictionary("date" -> new js.Date("2010-08-14"))
+      ) == true
+    )
   }
 
   "evaluate" should "compare date with today()" in {
-    assert(Expressions.evaluate("'2010-08-13' <= today() ", Dictionary()) == true)
+    assert(
+      Expressions.evaluate("'2010-08-13' <= today() ", Dictionary()) == true
+    )
   }
 }

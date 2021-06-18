@@ -56,6 +56,7 @@ pipeline {
                 stage('Build, Test') {
                     steps {
                         container('maven') {
+                            sh "./sbtx scalafmtCheck"
                             sh "./sbtx coverage test coverageReport"
                             fetch_codecov()
                             sh "./codecov -c -K -C ${GIT_COMMIT}"
@@ -83,6 +84,7 @@ pipeline {
                 stage('Build, Test, Push to Registries [ master ]') {
                     steps {
                         container('maven') {
+                            sh "./sbtx scalafmtCheck"
                             sh "./sbtx test fullOptJS"
                             sh "./sbtx expressions/sonarScan"
                             sh "./sbtx 'project expressions' 'release with-defaults'"

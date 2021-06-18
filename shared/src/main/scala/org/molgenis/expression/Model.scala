@@ -35,9 +35,15 @@ case object Or extends BooleanOperator
 
 sealed trait Expression
 
-final case class UnaryOperation(operator: UnaryOperator, operand: Expression) extends Expression
-final case class BinaryOperation(operator: BinaryOperator, left: Expression, right: Expression) extends Expression
-final case class FunctionEvaluation(name: String, arguments: List[Expression]) extends Expression
+final case class UnaryOperation(operator: UnaryOperator, operand: Expression)
+    extends Expression
+final case class BinaryOperation(
+    operator: BinaryOperator,
+    left: Expression,
+    right: Expression
+) extends Expression
+final case class FunctionEvaluation(name: String, arguments: List[Expression])
+    extends Expression
 final case class Constant(expression: Any) extends Expression
 case object Null extends Expression
 final case class Variable(name: String) extends Expression

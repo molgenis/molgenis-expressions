@@ -20,11 +20,12 @@ class ParserSpec extends AnyFlatSpec with Tables {
     ("2.", 2.0),
     (".18", 0.18),
     ("-2.", -2.0),
-    ("-.18", -0.18),
+    ("-.18", -0.18)
   )
   "Value parser" should "parse numbers" in {
     forAll(numbers)((string, expected) => {
-      val Parsed.Success(Constant(actual), _) = parse(string, Parser.constValue(_))
+      val Parsed.Success(Constant(actual), _) =
+        parse(string, Parser.constValue(_))
       assert(actual === expected)
     })
   }
@@ -33,11 +34,12 @@ class ParserSpec extends AnyFlatSpec with Tables {
     ("string", "value"),
     ("true", true),
     ("false", false),
-    ("False", false),
+    ("False", false)
   )
   it should "parse booleans" in {
     forAll(booleans)((string, expected) => {
-      val Parsed.Success(Constant(actual), _) = parse(string, Parser.constValue(_))
+      val Parsed.Success(Constant(actual), _) =
+        parse(string, Parser.constValue(_))
       assert(actual === expected)
     })
   }
@@ -84,7 +86,10 @@ class ParserSpec extends AnyFlatSpec with Tables {
   val arrays: TableFor2[String, expression.Array] = Table(
     ("string", "array"),
     ("[]", expression.Array(List())),
-    ("[3, 2.0, 0]", expression.Array(List(Constant(3), Constant(2.0), Constant(0)))),
+    (
+      "[3, 2.0, 0]",
+      expression.Array(List(Constant(3), Constant(2.0), Constant(0)))
+    ),
     ("['foo', 'bar']", expression.Array(List(Constant("foo"), Constant("bar"))))
   )
   it should "parse arrays" in {
@@ -109,9 +114,17 @@ class ParserSpec extends AnyFlatSpec with Tables {
   val functionCalls: TableFor2[String, FunctionEvaluation] = Table(
     ("string", "function evaluation"),
     ("foo({bar})", FunctionEvaluation("foo", List(Variable("bar")))),
-    ("foo({bar}, 'baz')", FunctionEvaluation("foo", List(Variable("bar"), Constant("baz")))),
-    ("regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$', {zipcode})", FunctionEvaluation("regex",
-      List(Constant("^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$"), Variable("zipcode"))))
+    (
+      "foo({bar}, 'baz')",
+      FunctionEvaluation("foo", List(Variable("bar"), Constant("baz")))
+    ),
+    (
+      "regex('^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$', {zipcode})",
+      FunctionEvaluation(
+        "regex",
+        List(Constant("^[1-9][0-9]{3}[\\s]?[A-Za-z]{2}$"), Variable("zipcode"))
+      )
+    )
   )
   it should "parse function calls" in {
     forAll(arrays)((string, expected) => {
@@ -121,70 +134,127 @@ class ParserSpec extends AnyFlatSpec with Tables {
   }
 
   "Binary functions" should "parse contains" in {
-    assert(Parser.parseAll("{bar} contains ['foo']").success.value ==
-      BinaryOperation(Contains, Variable("bar"), expression.Array(List(Constant("foo")))))
+    assert(
+      Parser.parseAll("{bar} contains ['foo']").success.value ==
+        BinaryOperation(
+          Contains,
+          Variable("bar"),
+          expression.Array(List(Constant("foo")))
+        )
+    )
   }
 
   "Power" should "parse" in {
-    assert(Parser.parseAll("3 power 2").success.value == BinaryOperation(Power, Constant(3), Constant(2)))
-    assert(Parser.parseAll("3 ^ 2").success.value == BinaryOperation(Power, Constant(3), Constant(2)))
+    assert(
+      Parser.parseAll("3 power 2").success.value == BinaryOperation(
+        Power,
+        Constant(3),
+        Constant(2)
+      )
+    )
+    assert(
+      Parser.parseAll("3 ^ 2").success.value == BinaryOperation(
+        Power,
+        Constant(3),
+        Constant(2)
+      )
+    )
   }
 
   it should "be right-associative" in {
-    assert(Parser.parseAll("3^4^5").success.value ==
-      BinaryOperation(Power, Constant(3), BinaryOperation(Power, Constant(4), Constant(5))))
+    assert(
+      Parser.parseAll("3^4^5").success.value ==
+        BinaryOperation(
+          Power,
+          Constant(3),
+          BinaryOperation(Power, Constant(4), Constant(5))
+        )
+    )
   }
 
   "Multiplication and Division" should "parse" in {
-    assert(Parser.parseAll("3 * 2").success.value == BinaryOperation(Multiply, Constant(3), Constant(2)))
-    assert(Parser.parseAll("3 / 2").success.value == BinaryOperation(Divide, Constant(3), Constant(2)))
+    assert(
+      Parser.parseAll("3 * 2").success.value == BinaryOperation(
+        Multiply,
+        Constant(3),
+        Constant(2)
+      )
+    )
+    assert(
+      Parser.parseAll("3 / 2").success.value == BinaryOperation(
+        Divide,
+        Constant(3),
+        Constant(2)
+      )
+    )
   }
 
   it should "be left-associative" in {
-    assert(Parser.parseAll("3 / 2 * 4").success.value ==
-      BinaryOperation(Multiply, BinaryOperation(Divide, Constant(3), Constant(2)), Constant(4)))
+    assert(
+      Parser.parseAll("3 / 2 * 4").success.value ==
+        BinaryOperation(
+          Multiply,
+          BinaryOperation(Divide, Constant(3), Constant(2)),
+          Constant(4)
+        )
+    )
   }
 
   "Addition and subtraction" should "parse" in {
-    assert(Parser.parseAll("3 + 2").success.value == BinaryOperation(Add, Constant(3), Constant(2)))
-    assert(Parser.parseAll("3 - 2").success.value == BinaryOperation(Subtract, Constant(3), Constant(2)))
+    assert(
+      Parser.parseAll("3 + 2").success.value == BinaryOperation(
+        Add,
+        Constant(3),
+        Constant(2)
+      )
+    )
+    assert(
+      Parser.parseAll("3 - 2").success.value == BinaryOperation(
+        Subtract,
+        Constant(3),
+        Constant(2)
+      )
+    )
   }
 
   it should "be left-associative" in {
-    assert(Parser.parseAll("3 - 2 + 4").success.value ==
-      BinaryOperation(Add, BinaryOperation(Subtract, Constant(3), Constant(2)), Constant(4)))
+    assert(
+      Parser.parseAll("3 - 2 + 4").success.value ==
+        BinaryOperation(
+          Add,
+          BinaryOperation(Subtract, Constant(3), Constant(2)),
+          Constant(4)
+        )
+    )
   }
 
   it should "give power higher precedence than multiplication and division" in {
-    assert(Parser.parseAll("3 ^ 2 * 5").success.value ==
-      BinaryOperation(
-        Multiply,
+    assert(
+      Parser.parseAll("3 ^ 2 * 5").success.value ==
         BinaryOperation(
-          Power,
-          Constant(3),
-          Constant(2)),
-        Constant(5)))
+          Multiply,
+          BinaryOperation(Power, Constant(3), Constant(2)),
+          Constant(5)
+        )
+    )
 
-    assert(Parser.parseAll("5 * 3 ^ 2").success.value ==
-      BinaryOperation(
-        Multiply,
-        Constant(5),
+    assert(
+      Parser.parseAll("5 * 3 ^ 2").success.value ==
         BinaryOperation(
-          Power,
-          Constant(3),
-          Constant(2))))
+          Multiply,
+          Constant(5),
+          BinaryOperation(Power, Constant(3), Constant(2))
+        )
+    )
 
-    assert(Parser.parseAll("3+2=4+1").success.value ==
-      BinaryOperation(
-        Equal,
+    assert(
+      Parser.parseAll("3+2=4+1").success.value ==
         BinaryOperation(
-          Add,
-          Constant(3),
-          Constant(2)),
-        BinaryOperation(
-          Add,
-          Constant(4),
-          Constant(1))))
+          Equal,
+          BinaryOperation(Add, Constant(3), Constant(2)),
+          BinaryOperation(Add, Constant(4), Constant(1))
+        )
+    )
   }
 
   val comparisonOperators: TableFor3[String, String, BinaryOperator] = Table(
@@ -212,45 +282,72 @@ class ParserSpec extends AnyFlatSpec with Tables {
 
   it should "parse comparator names case insensitively" in {
     forAll(comparisonOperators)((_, name, operator) => {
-      val Parsed.Success(result, _) = parse(name.toUpperCase, Parser.binFunctions(_))
+      val Parsed.Success(result, _) =
+        parse(name.toUpperCase, Parser.binFunctions(_))
       assert(result == operator)
     })
   }
 
   "Comparisons" should "parse simple expressions" in {
-    forAll(comparisonOperators)((sign, _, operator) => assert(
-      Parser.parseAll(s"3 ${sign} 2").get == BinaryOperation(operator, Constant(3), Constant(2)))
+    forAll(comparisonOperators)((sign, _, operator) =>
+      assert(
+        Parser
+          .parseAll(s"3 ${sign} 2")
+          .get == BinaryOperation(operator, Constant(3), Constant(2))
+      )
     )
   }
 
   "Unary functions" should "parse postfix operator after variable" in {
-    assert(Parser.parseAll("{foo} notempty").success.value == UnaryOperation(NotEmpty, Variable("foo")))
+    assert(
+      Parser.parseAll("{foo} notempty").success.value == UnaryOperation(
+        NotEmpty,
+        Variable("foo")
+      )
+    )
   }
 
   it should "parse postfix operator after list" in {
-    assert(Parser.parseAll("['foo'] notempty").success.value == expression.UnaryOperation(NotEmpty, expression.Array(List(Constant("foo")))))
+    assert(
+      Parser.parseAll("['foo'] notempty").success.value == expression
+        .UnaryOperation(NotEmpty, expression.Array(List(Constant("foo"))))
+    )
   }
 
   it should "parse unary functions in logical expression" in {
-    assert(Parser.parseAll("{row.user_id} notempty and {roles} notempty").success.value ==
-      BinaryOperation(And,
-        UnaryOperation(NotEmpty, Variable("row.user_id")),
-        UnaryOperation(NotEmpty, Variable("roles"))))
+    assert(
+      Parser
+        .parseAll("{row.user_id} notempty and {roles} notempty")
+        .success
+        .value ==
+        BinaryOperation(
+          And,
+          UnaryOperation(NotEmpty, Variable("row.user_id")),
+          UnaryOperation(NotEmpty, Variable("roles"))
+        )
+    )
   }
 
-  val binaryFunctions: TableFor3[Option[String], String, BinaryOperator] = Table(
-    ("sign", "name", "operator"),
-    (Some("*="), "contains", Contains),
-    (None, "notcontains", NotContains),
-    (None, "anyof", AnyOf),
-    (None, "allof", AllOf)
-  )
+  val binaryFunctions: TableFor3[Option[String], String, BinaryOperator] =
+    Table(
+      ("sign", "name", "operator"),
+      (Some("*="), "contains", Contains),
+      (None, "notcontains", NotContains),
+      (None, "anyof", AnyOf),
+      (None, "allof", AllOf)
+    )
 
   "Binary functions" should "parse array expression" in {
-    forAll(binaryFunctions)((_, name, operator) => assert(
-      Parser.parseAll(s"{foo} ${name} [1, 2]").get ==
-        expression.BinaryOperation(operator, Variable("foo"), expression.Array(List(Constant(1), Constant(2))))
-    ))
+    forAll(binaryFunctions)((_, name, operator) =>
+      assert(
+        Parser.parseAll(s"{foo} ${name} [1, 2]").get ==
+          expression.BinaryOperation(
+            operator,
+            Variable("foo"),
+            expression.Array(List(Constant(1), Constant(2)))
+          )
+      )
+    )
   }
 
   it should "parse array expression by sign" in {
@@ -258,14 +355,25 @@ class ParserSpec extends AnyFlatSpec with Tables {
       whenever(sign.isDefined) {
         assert(
           Parser.parseAll(s"{foo} ${sign.get} [1, 2]").get ==
-            expression.BinaryOperation(operator, Variable("foo"), expression.Array(List(Constant(1), Constant(2))))
+            expression.BinaryOperation(
+              operator,
+              Variable("foo"),
+              expression.Array(List(Constant(1), Constant(2)))
+            )
         )
-      })
+      }
+    )
   }
 
   it should "give unary operands higher precedence than binary operands" in {
-    assert(Parser.parseAll("!{foo} or {bar}").success.value ==
-      BinaryOperation(Or, UnaryOperation(Negate, Variable("foo")), Variable("bar")))
+    assert(
+      Parser.parseAll("!{foo} or {bar}").success.value ==
+        BinaryOperation(
+          Or,
+          UnaryOperation(Negate, Variable("foo")),
+          Variable("bar")
+        )
+    )
   }
 
   "Parse failures" should "be reported as failures containing a ParseError" in {
