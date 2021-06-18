@@ -3,12 +3,14 @@ package org.molgenis.expression
 import org.molgenis.expression.Parser.ParseException
 import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import org.scalatest.prop.{TableFor2, Tables}
 
-import java.time.{LocalDate, ZoneOffset}
+import java.time.{Instant, LocalDate, ZoneOffset}
 import java.util
 import scala.util.{Success, Try}
 
-class ExpressionsSpec extends AnyFlatSpec {
+class ExpressionsSpec extends AnyFlatSpec with Tables {
   val expressions: Expressions = new Expressions(1000)
 
   "Get Variable Names" should "work with java collections" in {
@@ -163,4 +165,32 @@ class ExpressionsSpec extends AnyFlatSpec {
       ) == util.List.of(Success(true), Success(true))
     )
   }
+
+  val valueMappings: TableFor2[Any, Any] = Table(
+    ("java", "scala"),
+    (java.lang.Byte.MIN_VALUE, Byte.MinValue),
+    (java.lang.Short.MIN_VALUE, Short.MinValue),
+    (java.lang.Character.MIN_VALUE, Char.MinValue),
+    (java.lang.Integer.MIN_VALUE, Int.MinValue),
+    (java.lang.Long.MIN_VALUE, Long.MinValue),
+    (java.lang.Float.MIN_VALUE, Float.MinPositiveValue),
+    (java.lang.Double.MIN_VALUE, Double.MinPositiveValue),
+    (java.lang.Boolean.TRUE, true),
+    (util.List.of("hello"), List("hello")),
+    (util.Map.of("foo", "bar"), Map("foo" -> "bar")),
+    (LocalDate.parse("2020-08-23"), "2020-08-23"),
+    (Instant.parse("2020-08-23T02:18:22Z"), "2020-08-23T02:18:22Z")
+  )
+
+  "context conversion" should "map java to scala" in {
+    forAll(valueMappings)((java, scala) => {
+      assert(
+        expressions.parseAndEvaluate(
+          util.List.of("{foo}"),
+          util.Map.of("foo", java)
+        ) == util.List.of(Success(scala))
+      )
+    })
+  }
+
 }
