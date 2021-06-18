@@ -1,7 +1,7 @@
 # MOLGENIS expressions
 [![Sonatype Nexus (Repository)](https://img.shields.io/nexus/maven-releases/org.molgenis/molgenis-expressions_2.13?server=https%3A%2F%2Fregistry.molgenis.org)](https://registry.molgenis.org/#browse/browse:maven-releases:org%2Fmolgenis%2Fmolgenis-expressions_2.13)
 [![npm](https://img.shields.io/npm/v/@molgenis/expressions)](https://www.npmjs.com/package/@molgenis/expressions)
-![Codecov](https://img.shields.io/codecov/c/github/molgenis/molgenis-expressions)
+[![Codecov](https://img.shields.io/codecov/c/github/molgenis/molgenis-expressions)](https://codecov.io/gh/molgenis/molgenis-expressions)
 
 Library for evaluation of simple expressions given a context of variables.
 Compatible with the expression language used in [Survey JS](https://github.com/surveyjs/survey-library/tree/master/src/expressions).
