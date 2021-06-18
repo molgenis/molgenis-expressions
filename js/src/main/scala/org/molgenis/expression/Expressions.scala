@@ -19,33 +19,38 @@ object Expressions {
 
   def today(params: List[Any]) = new js.Date().toISOString()
 
-  def regex(params: List[Any]): Boolean = params match {
-    case List(_, null) => false
-    case List(a: String, b: String) => RegExp(a).test(b)
-    case List(a: String, b: String, flags: String) =>
-      val invalidFlag = "([^ims])".r
-      flags match {
-        case invalidFlag(x) => throw new IllegalArgumentException(s"Unknown regex flag: $x")
-        case _ =>
-      }
-      RegExp(a, flags).test(b)
-  }
+  def regex(params: List[Any]): Boolean =
+    params match {
+      case List(_, null)              => false
+      case List(a: String, b: String) => RegExp(a).test(b)
+      case List(a: String, b: String, flags: String) =>
+        val invalidFlag = "([^ims])".r
+        flags match {
+          case invalidFlag(x) =>
+            throw new IllegalArgumentException(s"Unknown regex flag: $x")
+          case _ =>
+        }
+        RegExp(a, flags).test(b)
+    }
 
-  def convertDate(p: Any): Option[js.Date] = p match {
-    case s: String => Some(new js.Date(s))
-    case d: js.Date => Some(d)
-    case x if js.isUndefined(x) => None
-    case null => None
-  }
+  def convertDate(p: Any): Option[js.Date] =
+    p match {
+      case s: String              => Some(new js.Date(s))
+      case d: js.Date             => Some(d)
+      case x if js.isUndefined(x) => None
+      case null                   => None
+    }
 
-  val ageConvert: List[Any] => Any = (p: List[Any]) => p.map(convertDate) match {
-    case Nil => null
-    case Some(dob) :: Some(date) :: _ => age(dob, date)
-    case Some(dob) :: _ => age(dob, new js.Date())
-    case None :: _ => null
-  }
+  val ageConvert: List[Any] => Any = (p: List[Any]) =>
+    p.map(convertDate) match {
+      case Nil                          => null
+      case Some(dob) :: Some(date) :: _ => age(dob, date)
+      case Some(dob) :: _               => age(dob, new js.Date())
+      case None :: _                    => null
+    }
 
-  val currentYear: List[Any] => Int = (p: List[Any]) => new js.Date().getFullYear().toInt
+  val currentYear: List[Any] => Int = (p: List[Any]) =>
+    new js.Date().getFullYear().toInt
 
   @JSExportTopLevel("functions")
   val functions: mutable.Map[String, List[Any] => Any] = mutable.Map(
@@ -56,23 +61,23 @@ object Expressions {
   )
 
   @JSExportTopLevel("evaluate")
-  def evaluate(expression: String,
-               context: js.Dictionary[js.Any]): Any = {
+  def evaluate(expression: String, context: js.Dictionary[js.Any]): Any = {
     val parsedExpression = Parser.parseAll(expression)
     val evaluator = new Evaluator.Evaluator(createContext(context), functions)
     val result: Try[Any] = parsedExpression.flatMap(evaluator.evaluate)
     result match {
-      case Success(x) => x
+      case Success(x)         => x
       case Failure(exception) => throw exception
     }
   }
 
-  def mapValue(v: js.Any): Any = v match {
-    case a: js.Array[_] => a.toList
-    case x if js.isUndefined(x) => null
-    case d: js.Date => d.toISOString()
-    case _ => v
-  }
+  def mapValue(v: js.Any): Any =
+    v match {
+      case a: js.Array[_]         => a.toList
+      case x if js.isUndefined(x) => null
+      case d: js.Date             => d.toISOString()
+      case _                      => v
+    }
 
   def createContext(context: Dictionary[js.Any]): Map[String, Any] =
     context.view
@@ -84,7 +89,7 @@ object Expressions {
   def variableNames(expression: String): js.Array[String] = {
     val result = Parser.parseAll(expression).map(Evaluator.getVariables)
     result match {
-      case Success(x) => x.toJSArray
+      case Success(x)         => x.toJSArray
       case Failure(exception) => throw exception
     }
   }

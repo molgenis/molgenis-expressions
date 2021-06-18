@@ -8,14 +8,13 @@ import scala.sys.process._
 ThisBuild / scalaVersion := "2.13.5"
 ThisBuild / versionScheme := Some("early-semver")
 
-lazy val root = project.in(file(".")).
-  aggregate(expressionsJVM, expressionsJS)
+lazy val root = project.in(file(".")).aggregate(expressionsJVM, expressionsJS)
 
-lazy val expressions = crossProject(JSPlatform, JVMPlatform).
-  crossType(CrossType.Full).
-  withoutSuffixFor(JVMPlatform).
-  in(file(".")).
-  settings(
+lazy val expressions = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full)
+  .withoutSuffixFor(JVMPlatform)
+  .in(file("."))
+  .settings(
     organization := "org.molgenis",
     name := "molgenis-expressions",
     majorRegexes := List(""".*BREAKING CHANGE:.*""".r),
@@ -43,8 +42,9 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
       setNextVersion,
       commitNextVersion,
       pushChanges
-    )).
-  jvmSettings(
+    )
+  )
+  .jvmSettings(
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.7" % Test,
     libraryDependencies += "com.github.ben-manes.caffeine" % "caffeine" % "2.8.2",
     publishMavenStyle := true,
@@ -53,12 +53,20 @@ lazy val expressions = crossProject(JSPlatform, JVMPlatform).
     publishTo := {
       val nexus = "https://registry.molgenis.org/"
       if (isSnapshot.value)
-        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-snapshots")
+        Some(
+          "Sonatype Nexus Repository Manager" at nexus + "repository/maven-snapshots"
+        )
       else
-        Some("Sonatype Nexus Repository Manager" at nexus + "repository/maven-releases")
+        Some(
+          "Sonatype Nexus Repository Manager" at nexus + "repository/maven-releases"
+        )
     },
-    scmInfo := Some(ScmInfo(new URL("https://github.com/molgenis/molgenis-expressions"),
-      "https://github.com/molgenis/molgenis-expressions.git"))
+    scmInfo := Some(
+      ScmInfo(
+        new URL("https://github.com/molgenis/molgenis-expressions"),
+        "https://github.com/molgenis/molgenis-expressions.git"
+      )
+    )
   )
   .jsSettings(
     scalaJSLinkerConfig ~= {
@@ -73,7 +81,8 @@ lazy val setVersionNpm = ReleaseStep(action = st => {
   val extracted = Project.extract(st)
   val version = extracted.get(Keys.version)
   val shell: Seq[String] = Seq("sh", "-c")
-  val npmSetVersion: Seq[String] = shell :+ s"npm version ${version} --no-git-tag-version"
+  val npmSetVersion: Seq[String] =
+    shell :+ s"npm version ${version} --no-git-tag-version"
   val gitAddNpmVersion: Seq[String] = shell :+ "git add package.json"
   if ((npmSetVersion #&& gitAddNpmVersion).! != 0) {
     throw new IllegalStateException("Failed to publish")
