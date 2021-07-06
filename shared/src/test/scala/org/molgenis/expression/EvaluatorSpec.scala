@@ -232,6 +232,8 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
     ("expression", "value"),
     ("['a'] empty", false),
     ("['a'] notempty", true),
+    ("1 notempty", true),
+    ("1 empty", false),
     ("! null", true),
     ("! 'foo'", false),
     ("! false", true)
@@ -239,6 +241,44 @@ class EvaluatorSpec extends AnyFlatSpec with Tables {
 
   "unary expressions" should "be parsed and evaluated correctly" in {
     forAll(unaryExpressions)((expression, expected) => {
+      val parsedExpression = Parser.parseAll(expression)
+      val parsed = parsedExpression.success.value
+      val evaluated = evaluator.evaluate(parsed)
+      assert(evaluated.success.value === expected)
+    })
+  }
+
+  val booleanExpressions: TableFor2[String, Boolean] = Table(
+    ("expression", "value"),
+    ("4 < 5", true),
+    ("4 < 4", false),
+    ("4 <= 4", true),
+    ("5 <= 4", false),
+    ("4 >= 4", true),
+    ("4 >= 5", false),
+    ("5 > 4", true),
+    ("4 > 4", false),
+    ("5 = 5", true),
+    ("'4' < '5'", true),
+    ("'4' < '4'", false),
+    ("'4' <= '4'", true),
+    ("'5' <= '4'", false),
+    ("'4' >= '4'", true),
+    ("'4' >= '5'", false),
+    ("'5' > '4'", true),
+    ("'4' > '4'", false),
+    ("'5' = '5'", true),
+    ("5 != 5", false),
+    ("5 != 4", true),
+    ("5 != null", true),
+    ("null != 5", true),
+    ("null != null", false),
+    ("5 = null", false),
+    ("null = 5", false)
+  )
+
+  "boolean expressions" should "be parsed and evaluated correctly" in {
+    forAll(booleanExpressions)((expression, expected) => {
       val parsedExpression = Parser.parseAll(expression)
       val parsed = parsedExpression.success.value
       val evaluated = evaluator.evaluate(parsed)
