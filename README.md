@@ -167,7 +167,7 @@ Optionally, check a single expression to see if it can be parsed
 ```java
 // throws ParseException
 evaluator.getVariableNames("{foo");
-// throws Set<String> containing ["foo", "bar]
+// returns Set<String> containing ["foo", "bar]
 evaluator.getVariableNames("{foo} > {bar}");
 ```
 
