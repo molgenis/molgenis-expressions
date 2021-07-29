@@ -103,6 +103,14 @@ class ExpressionsSpec extends AnyFlatSpec {
     )
   }
 
+  "today" should "be in yyyy-mm-dd format" in {
+    val now = new js.Date()
+    assert(
+      Expressions
+        .evaluate("today()", Dictionary()) === s"${now.toISOString().substring(0, 10)}"
+    )
+  }
+
   "evaluate" should "compare date with today()" in {
     assert(
       Expressions.evaluate("'2010-08-13' <= today() ", Dictionary()) == true

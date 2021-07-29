@@ -17,7 +17,7 @@ object Expressions {
     else result
   }
 
-  def today(params: List[Any]) = new js.Date().toISOString()
+  def today(params: List[Any]) = new js.Date().toISOString().substring(0, 10)
 
   def regex(params: List[Any]): Boolean =
     params match {
