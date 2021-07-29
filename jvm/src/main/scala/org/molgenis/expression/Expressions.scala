@@ -54,7 +54,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
   /**
     * Get all variable names used in expressions. Skips expressions that it cannot parse.
     *
-   * @param expressions List of expression Strings
+    * @param expressions List of expression Strings
     * @return Set of variable names
     */
   def getAllVariableNames(expressions: util.List[String]): util.Set[String] = {
@@ -105,7 +105,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
   /**
     * Evaluates a list of expressions within a context
     *
-   * @param expressions the expressions to parse and evaluate
+    * @param expressions the expressions to parse and evaluate
     * @param context     the context in which to evaluate the expressions
     * @return List<Try> containing the results of the parsing and evaluating
     */
@@ -130,4 +130,21 @@ class Expressions(val maxCacheSize: Int = 1000) {
       .map(expression => expression.flatMap(evaluator.evaluate))
     asJava(evaluated)
   }
+
+  /**
+    * Evaluates a single expression within a context.
+    *
+    * @param expression the expression to parse and evaluate
+    * @param context the context in which to evaluate the expression
+    * @return result of the and evaluation of the parsed expression
+    * @throws Throwable if evaluation failed
+    */
+  def parseAndEvaluate(
+      expression: String,
+      context: util.Map[String, Any]
+  ): Any =
+    parseAndEvaluate(util.List.of(expression), context).get(0) match {
+      case Success(value)     => value
+      case Failure(exception) => throw exception
+    }
 }

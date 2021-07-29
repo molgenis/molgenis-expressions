@@ -30,6 +30,20 @@ class ExpressionsSpec extends AnyFlatSpec with Tables {
     )
   }
 
+  "Parse and evaluate single expression" should "return single result" in {
+    val javaContext = util.Map.of[String, Any]("foo", 2, "bar", 2f)
+    assert(
+      expressions.parseAndEvaluate("{foo} = {bar}", javaContext) == true
+    )
+  }
+
+  it should "throw an error if evaluation fails" in {
+    val javaContext = util.Map.of[String, Any]("foo", 2, "bar", 2f)
+    assertThrows[ParseException](
+      expressions.parseAndEvaluate("unparseable", javaContext)
+    )
+  }
+
   "function 'regex'" should "test string" in {
     val javaExpressions = util.List.of(
       """regex('^\\w+(,(ASC|DESC))?(;\\w+(,(ASC|DESC))?)*$','foo,ASC;bar,DESC')"""
