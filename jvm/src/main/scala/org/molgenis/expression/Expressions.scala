@@ -19,7 +19,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
 
   private def regex: List[Any] => Boolean = {
     case List(_, null)              => false
-    case List(a: String, b: String) => Pattern.compile(a).matcher(b).matches
+    case List(a: String, b: String) => Pattern.compile(a).matcher(b).find
     case List(a: String, b: String, flags: String) =>
       val flag: Int = flags.toList.foldLeft(0)((flags, flagChar) =>
         flagChar match {
@@ -30,7 +30,7 @@ class Expressions(val maxCacheSize: Int = 1000) {
             throw new IllegalArgumentException(s"Unknown regex flag: $x")
         }
       )
-      Pattern.compile(a, flag).matcher(b).matches
+      Pattern.compile(a, flag).matcher(b).find
   }
 
   private def toLocalDate(value: Any): Option[LocalDate] =
