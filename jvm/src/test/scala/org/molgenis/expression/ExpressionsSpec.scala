@@ -55,6 +55,28 @@ class ExpressionsSpec extends AnyFlatSpec with Tables {
     )
   }
 
+  it should "find partial matches" in {
+    val javaExpressions = util.List.of(
+      """regex('^[cgmnopr]\\.', {hgvs})"""
+    )
+    val javaContext = util.Map.of[String, Any]("hgvs", "c.2739delT")
+    assert(
+      expressions.parseAndEvaluate(javaExpressions, javaContext) == util.List
+        .of(Success(true))
+    )
+  }
+
+  it should "find partial matches with flags" in {
+    val javaExpressions = util.List.of(
+      """regex('^[cgmnopr]\\.', {hgvs}, 'i')"""
+    )
+    val javaContext = util.Map.of[String, Any]("hgvs", "C.2739delT")
+    assert(
+      expressions.parseAndEvaluate(javaExpressions, javaContext) == util.List
+        .of(Success(true))
+    )
+  }
+
   "age" should "be one if your first birthday is today" in {
     val todayAYearAgo: LocalDate = LocalDate.now(ZoneOffset.UTC).minusYears(1)
 
