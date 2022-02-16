@@ -97,7 +97,7 @@ npm add @molgenis/expressions
 ```
 In your code, import the module:
 ```javascript
-import { Expressions } from '@molgenis/expressions'
+import Expressions from '@molgenis/expressions'
 ```
 To evaluate an expression:
 ```javascript
