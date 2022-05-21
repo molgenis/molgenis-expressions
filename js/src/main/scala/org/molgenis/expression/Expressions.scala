@@ -22,6 +22,7 @@ object Expressions {
   def regex(params: List[Any]): Boolean =
     params match {
       case List(_, null)              => false
+      case List(_, null, _)           => false
       case List(a: String, b: String) => RegExp(a).test(b)
       case List(a: String, b: String, flags: String) =>
         val invalidFlag = "([^ims])".r
