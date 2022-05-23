@@ -67,6 +67,15 @@ class ExpressionsSpec extends AnyFlatSpec {
     )
   }
 
+  it should "return false for null value" in {
+    assert (
+      Expressions.evaluate(
+        """regex('foo', {x}, 'i')""",
+        Dictionary()
+      ) === false
+    )
+  }
+
   it should "evaluate regular expression with flags" in {
     assert(
       Expressions.evaluate(
