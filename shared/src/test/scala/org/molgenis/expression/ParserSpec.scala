@@ -2,11 +2,13 @@ package org.molgenis.expression
 
 import fastparse._
 import org.molgenis.expression
-import org.molgenis.expression.Parser.ParseException
+import org.molgenis.expression.Parser.{ParseException, parseAll}
 import org.scalatest.TryValues._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.{forAll, whenever}
 import org.scalatest.prop.{TableFor2, TableFor3, Tables}
+
+import scala.util.Success
 
 class ParserSpec extends AnyFlatSpec with Tables {
   val numbers: TableFor2[String, Number] = Table(
@@ -131,6 +133,11 @@ class ParserSpec extends AnyFlatSpec with Tables {
       val Parsed.Success(actual, _) = parse(string, Parser.expression(_))
       assert(actual === expected)
     })
+  }
+
+  it should "parse unary postfix operator after a function call" in {
+    val Success(actual) = parseAll("age() empty")
+    assert(actual === UnaryOperation(Empty, FunctionEvaluation("age", List())))
   }
 
   "Binary functions" should "parse contains" in {

@@ -118,21 +118,22 @@ object Parser {
         IgnoreCase("notempty").map(_ => NotEmpty)
     )
 
+  def functionOperation[_: P]: P[Expression] =
+    P(
+      (identifier ~ "(" ~/ expression.rep(sep = ",") ~ ")")
+        .map { case (name, args) => FunctionEvaluation(name, args.toList) } |
+        atom
+    )
+
   def unaryOperation[_: P]: P[Expression] =
     P(
       (("!" | IgnoreCase("negate")) ~/ factor.map {
         UnaryOperation(Negate, _)
       }) |
-        (atom ~ unFunction.?).map {
-          case (atom, None)        => atom
+        (functionOperation ~ unFunction.?).map {
+          case (f, None)           => f
           case (operand, Some(op)) => UnaryOperation(op, operand)
         }
-    )
-
-  def functionOperation[_: P]: P[FunctionEvaluation] =
-    P(
-      (identifier ~ "(" ~/ expression.rep(sep = ",") ~ ")")
-        .map { case (name, args) => FunctionEvaluation(name, args.toList) }
     )
 
   def array[_: P]: P[Array] =
@@ -141,7 +142,7 @@ object Parser {
     )
 
   def factor[_: P]: P[Expression] =
-    P("(" ~/ expression ~ ")" | functionOperation | unaryOperation)
+    P("(" ~/ expression ~ ")" | unaryOperation)
 
   def binFunctions[_: P]: P[BinaryOperator] =
     P(
